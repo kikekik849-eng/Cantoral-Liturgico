@@ -346,8 +346,9 @@
         </div>
         <button onclick="closeAdminPanel()" class="text-slate-400 hover:text-slate-200 flex-shrink-0"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-      <div class="p-3 sm:p-4 border-b border-slate-800 bg-slate-950/60 flex justify-end">
-        <button onclick="openSongModal()" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10">
+      <div class="p-3 sm:p-4 border-b border-slate-800 bg-slate-950/60 flex justify-between items-center gap-2">
+        <input type="text" id="adminSongSearch" oninput="renderAdminSongsList()" placeholder="Buscar canto por título o autor..." class="w-full sm:max-w-xs bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+        <button onclick="openSongModal()" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10 flex-shrink-0">
           <i data-lucide="plus" class="w-4 h-4"></i> Agregar Nuevo Canto
         </button>
       </div>
@@ -598,7 +599,7 @@
 
     async function deleteSongFromFirebase(id) {
       const { doc, deleteDoc } = window.firebaseMethods;
-      await deleteDoc(doc(window.db, "songs", id));
+      await deleteDoc(doc(window.db, "songs", id.toString()));
     }
 
     async function savePlanToFirebase() {
@@ -845,12 +846,23 @@
 
     function renderAdminSongsList() {
       const tbody = document.getElementById('adminSongsTableBody');
+      if (!tbody) return;
       tbody.innerHTML = '';
-      if (songs.length === 0) {
+      
+      const searchVal = document.getElementById('adminSongSearch') ? document.getElementById('adminSongSearch').value.toLowerCase().trim() : '';
+      const filteredSongs = songs.filter(song => {
+        const title = (song.title || '').toLowerCase();
+        const author = (song.author || '').toLowerCase();
+        return title.includes(searchVal) || author.includes(searchVal);
+      });
+
+      if (filteredSongs.length === 0) {
         tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">No se encontraron cantos ingresados.</td></tr>`;
+        document.getElementById('adminTotalCount').textContent = `Total: 0 cantos`;
         return;
       }
-      songs.forEach(song => {
+
+      filteredSongs.forEach(song => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-800/50 transition';
         tr.innerHTML = `
@@ -864,7 +876,7 @@
         `;
         tbody.appendChild(tr);
       });
-      document.getElementById('adminTotalCount').textContent = `Total: ${songs.length} cantos`;
+      document.getElementById('adminTotalCount').textContent = `Mostrando ${filteredSongs.length} de ${songs.length} cantos`;
     }
 
     function editSongFromAdmin(id) {
