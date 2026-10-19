@@ -464,7 +464,7 @@
           <div>
             <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4 sm:mb-6 gap-2">
               <div class="min-w-0 text-left">
-                <span id="massCurrentSection" class="text-xs text-emerald-400 font-bold uppercase tracking-wider block truncate">Canto de Entrada</span>
+                <span id="massCurrentSection" class="text-xs themed-icon text-emerald-400 font-bold uppercase tracking-wider block truncate">Canto de Entrada</span>
                 <h2 id="massCurrentTitle" class="text-xl sm:text-4xl font-bold font-serif-title text-slate-100 mt-1 truncate">Título del Canto</h2>
               </div>
             </div>
@@ -1224,7 +1224,7 @@
         adminSessionBtn.className = `p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-slate-800 border ${borderSelectClass} transition flex items-center gap-1.5`;
       }
 
-      // Actualizar de forma segura usando classList en lugar de .replace()
+      // Actualizar elementos temáticos globales
       document.querySelectorAll('.themed-icon').forEach(el => {
         el.classList.remove('text-emerald-400', 'text-purple-400', 'text-red-400', 'text-sky-300', 'text-emerald-300', 'text-purple-300', 'text-red-300', 'text-sky-200');
         el.classList.add(textColorClass);
@@ -1235,6 +1235,7 @@
       if (massModeMainBtn) massModeMainBtn.className = `${solidBgClass} ${solidHoverClass} text-slate-950 font-semibold p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs flex items-center space-x-1 shadow-md ${shadowColorClass} transition duration-300`;
 
       renderLiturgicalNav();
+      renderMassSteps();
     }
 
     // Modo Misa en Vivo
@@ -1252,6 +1253,16 @@
       const container = document.getElementById('massStepsList');
       if (!container) return;
       container.innerHTML = '';
+
+      let activeBorderClass = 'border-emerald-500/50 bg-emerald-500/20 text-emerald-300 font-semibold';
+      if (currentSeason === 'purple') {
+        activeBorderClass = 'border-purple-500/50 bg-purple-500/20 text-purple-300 font-semibold';
+      } else if (currentSeason === 'red') {
+        activeBorderClass = 'border-red-500/50 bg-red-500/20 text-red-300 font-semibold';
+      } else if (currentSeason === 'white') {
+        activeBorderClass = 'border-sky-400/50 bg-sky-500/20 text-sky-200 font-semibold';
+      }
+
       LITURGICAL_SECTIONS.forEach((sec, index) => {
         const plannedSongId = massPlanSelection[sec.id];
         const assignedSong = plannedSongId ? songs.find(s => s.id === plannedSongId) : null;
@@ -1259,7 +1270,7 @@
         const btn = document.createElement('button');
         btn.onclick = () => selectMassStep(index);
         btn.className = `w-full min-w-[140px] md:min-w-0 text-left p-2.5 rounded-xl border text-xs transition mb-0 md:mb-1.5 flex items-center justify-between flex-shrink-0 ${
-          index === currentMassStepIndex ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 font-semibold' : 'bg-slate-950 border-slate-800/80 text-slate-400 hover:bg-slate-800'
+          index === currentMassStepIndex ? activeBorderClass : 'bg-slate-950 border-slate-800/80 text-slate-400 hover:bg-slate-800'
         }`;
         btn.innerHTML = `
           <div class="truncate pr-1">
@@ -1292,6 +1303,7 @@
         document.getElementById('massLyricsDisplay').textContent = 'No hay canto seleccionado para este momento litúrgico.';
       }
       lucide.createIcons();
+      changeLiturgicalSeason(currentSeason, false);
     }
 
     function prevMassStep() { if (currentMassStepIndex > 0) selectMassStep(currentMassStepIndex - 1); }
