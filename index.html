@@ -15,6 +15,29 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   
+  <!-- FIREBASE SDK (CDN v10) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAgqYZNVoOOYwZR-0okQLOe-s3UoykoMHY",
+      authDomain: "cantoral-af8f6.firebaseapp.com",
+      projectId: "cantoral-af8f6",
+      storageBucket: "cantoral-af8f6.firebasestorage.app",
+      messagingSenderId: "237424121566",
+      appId: "1:237424121566:web:0d5946e8c6c3a2ce02144f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Exponer Firebase globalmente para el sistema
+    window.db = db;
+    window.firebaseMethods = { collection, getDocs, doc, setDoc, deleteDoc, onSnapshot };
+    window.initFirebaseSync();
+  </script>
+
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -37,33 +60,14 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@500;700&display=swap');
     
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-    
-    .font-serif-title {
-      font-family: 'Cinzel', serif;
-    }
+    body { font-family: 'Inter', sans-serif; }
+    .font-serif-title { font-family: 'Cinzel', serif; }
+    .font-chord { font-family: 'Roboto Mono', monospace; }
 
-    .font-chord {
-      font-family: 'Roboto Mono', monospace;
-    }
-
-    /* Custom Scrollbars */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.6);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(100, 116, 139, 0.5);
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(148, 163, 184, 0.8);
-    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+    ::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.5); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.8); }
   </style>
 </head>
 <body class="h-full flex flex-col bg-slate-950 text-slate-100 overflow-x-hidden">
@@ -83,7 +87,6 @@
 
       <!-- Controls & Actions -->
       <div class="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
-        <!-- Liturgical Season Selector (Oculto si no hay admin) -->
         <div id="seasonSelectorContainer" class="relative hidden">
           <select id="seasonSelect" onchange="promptChangeSeason(this.value)" class="bg-slate-800 border border-slate-700 text-slate-200 text-[11px] sm:text-xs rounded-lg px-2 py-1.5 pr-6 focus:ring-1 focus:ring-emerald-500 focus:outline-none cursor-pointer">
             <option value="gold">Ordinario (Verde)</option>
@@ -93,37 +96,31 @@
           </select>
         </div>
 
-        <!-- Botón de Registro de Actividad (SOLO VISIBLE PARA EL ADMIN PRINCIPAL 'Enrique') -->
         <button id="activityLogBtn" onclick="openActivityLogModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs flex items-center space-x-1 transition hidden" title="Registro de Actividad">
           <i data-lucide="activity" class="w-4 h-4 text-amber-400"></i>
           <span class="hidden md:inline">Registro</span>
         </button>
 
-        <!-- Mass Planner Button -->
         <button onclick="handlePermissionAction('plan_mass', () => openPlannerModal())" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs flex items-center space-x-1 transition" title="Planear Misa">
           <i data-lucide="calendar" class="w-4 h-4 theme-icon-color text-emerald-400 transition-colors duration-300"></i>
           <span class="hidden md:inline">Planear</span>
         </button>
 
-        <!-- Admin Song Management Panel Button -->
         <button onclick="handlePermissionAction('manage_songs', () => openAdminPanel())" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs flex items-center space-x-1 transition" title="Gestión Cantos">
           <i data-lucide="music" class="w-4 h-4 theme-icon-color text-emerald-400 transition-colors duration-300"></i>
           <span class="hidden md:inline">Cantos</span>
         </button>
 
-        <!-- User/Admin Permissions Management Button -->
         <button onclick="handlePermissionAction('manage_users', () => openUsersAdminModal())" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs flex items-center space-x-1 transition" title="Administradores">
           <i data-lucide="users" class="w-4 h-4 theme-icon-color text-emerald-400 transition-colors duration-300"></i>
           <span class="hidden md:inline">Admins</span>
         </button>
 
-        <!-- Mass Mode Active Button -->
         <button id="massModeMainBtn" onclick="openMassMode()" class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-semibold p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs flex items-center space-x-1 shadow-md shadow-emerald-600/20 transition duration-300" title="Modo Misa Activa">
           <i data-lucide="book-open" class="w-4 h-4"></i>
           <span class="hidden md:inline">Misa Activa</span>
         </button>
 
-        <!-- Admin Lock / Unlock Status Toggle -->
         <button id="adminSessionBtn" onclick="toggleAdminSession()" title="Estado de Administrador" class="p-1.5 sm:p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-200 transition">
           <i data-lucide="lock" id="adminLockIcon" class="w-4 h-4 text-slate-400"></i>
         </button>
@@ -133,13 +130,11 @@
 
   <!-- MAIN CONTENT CONTAINER -->
   <div class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 flex flex-col md:flex-row gap-4 sm:gap-6 relative">
-
-    <!-- SIDEBAR TOGGLE BUTTON -->
     <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="absolute -left-3 top-4 z-20 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 p-1.5 rounded-full shadow-lg transition hidden md:flex items-center justify-center theme-icon-color duration-300" title="Ocultar/Mostrar Orden Litúrgico">
       <i data-lucide="panel-left-close" id="sidebarToggleIcon" class="w-4 h-4"></i>
     </button>
 
-    <!-- SIDEBAR: Liturgical Structure Navigation -->
+    <!-- SIDEBAR -->
     <aside id="liturgySidebar" class="w-full md:w-80 flex-shrink-0 flex flex-col gap-4 transition-all duration-300">
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-md flex items-center justify-between">
         <h2 id="sidebarHeaderTitle" class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5 transition-colors duration-300">
@@ -151,41 +146,34 @@
         <div class="flex items-center justify-between mb-3">
           <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Cantos Asignados</span>
           <span id="activePlanBanner" class="text-[10px] bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full hidden">
-            Plan Guardado
+            Plan Sincronizado
           </span>
         </div>
 
-        <nav class="space-y-1.5 overflow-y-auto max-h-[50vh] md:max-h-[calc(100vh-280px)] pr-1" id="liturgyNav">
-          <!-- Populated by JS -->
-        </nav>
+        <nav class="space-y-1.5 overflow-y-auto max-h-[50vh] md:max-h-[calc(100vh-280px)] pr-1" id="liturgyNav"></nav>
       </div>
     </aside>
 
-    <!-- MAIN VIEW: Song Details & Lyrics Reader -->
+    <!-- MAIN VIEW -->
     <main class="flex-1 flex flex-col gap-4 sm:gap-6 min-w-0">
       <div id="songDetailCard" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl flex-1 flex flex-col">
-        
-        <!-- Placeholder Empty State -->
         <div id="emptyState" class="flex-1 flex flex-col items-center justify-center text-center p-6 sm:p-8 text-slate-500 my-8 sm:my-12">
           <i data-lucide="music" class="w-12 h-12 sm:w-16 sm:h-16 mb-4 text-slate-700"></i>
           <h3 class="text-base sm:text-lg font-medium text-slate-300 mb-1">Selecciona un canto asignado</h3>
           <p class="text-xs max-w-md text-slate-500">Usa el botón "Planear" en la parte superior para asignar cantos a la misa y verlos aquí.</p>
         </div>
 
-        <!-- Song Content Container -->
         <div id="songContent" class="hidden flex-1 flex flex-col">
           <div class="flex flex-col sm:flex-row sm:items-start justify-between border-b border-slate-800 pb-4 gap-3 sm:gap-4">
             <div class="min-w-0">
               <div class="flex flex-wrap items-center gap-2 mb-1">
-                <span id="songSectionBadge" class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-2.5 py-0.5 rounded-full font-medium">
-                  Entrada
-                </span>
+                <span id="songSectionBadge" class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-2.5 py-0.5 rounded-full font-medium">Entrada</span>
               </div>
               <h2 id="songTitle" class="text-xl sm:text-3xl font-bold font-serif-title text-slate-100 break-words">Título del Canto</h2>
               <p id="songAuthor" class="text-xs text-slate-400 mt-1">Autor: Tradicional</p>
             </div>
 
-            <div class="flex items-center space-x-2 self-start sm:self-start flex-shrink-0">
+            <div class="flex items-center space-x-2 self-start flex-shrink-0">
               <button onclick="handlePermissionAction('manage_songs', () => editCurrentSong())" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition text-xs flex items-center gap-1">
                 <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">Editar</span>
               </button>
@@ -207,12 +195,11 @@
             <div id="lyricsDisplay" class="font-chord text-sm sm:text-base text-slate-200 whitespace-pre-wrap leading-relaxed"></div>
           </div>
         </div>
-
       </div>
     </main>
   </div>
 
-  <!-- MODAL: REGISTRO DE ACTIVIDAD (SOLO ADMIN PRINCIPAL ENRIQUE) -->
+  <!-- MODAL: REGISTRO DE ACTIVIDAD -->
   <div id="activityLogModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
       <div class="p-4 sm:p-5 border-b border-slate-800 flex justify-between items-center bg-slate-900">
@@ -222,29 +209,23 @@
           </div>
           <div class="min-w-0">
             <h3 class="text-sm sm:text-lg font-bold font-serif-title text-amber-400 truncate">Registro de Actividad de Administradores</h3>
-            <p class="text-xs text-slate-400 truncate">Historial de cambios realizados en el sistema</p>
+            <p class="text-xs text-slate-400 truncate">Historial sincronizado en la nube</p>
           </div>
         </div>
         <button onclick="closeActivityLogModal()" class="text-slate-400 hover:text-slate-200 flex-shrink-0"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-
       <div class="p-4 sm:p-6 overflow-y-auto flex-1">
         <div class="overflow-x-auto border border-slate-800 rounded-xl">
           <table class="w-full text-left text-xs border-collapse min-w-[500px]">
             <thead>
               <tr class="border-b border-slate-800 bg-slate-950 text-slate-400 uppercase tracking-wider">
-                <th class="p-3">Fecha / Hora</th>
-                <th class="p-3">Administrador</th>
-                <th class="p-3">Acción Realizada</th>
+                <th class="p-3">Fecha / Hora</th><th class="p-3">Administrador</th><th class="p-3">Acción Realizada</th>
               </tr>
             </thead>
-            <tbody id="activityLogTableBody" class="divide-y divide-slate-800/60 text-slate-200">
-              <!-- Rendered dynamically -->
-            </tbody>
+            <tbody id="activityLogTableBody" class="divide-y divide-slate-800/60 text-slate-200"></tbody>
           </table>
         </div>
       </div>
-
       <div class="p-4 border-t border-slate-800 flex justify-between items-center bg-slate-950">
         <button onclick="clearActivityLog()" class="px-3 py-1.5 bg-red-950/60 hover:bg-red-900 text-red-300 rounded-lg text-xs font-semibold border border-red-800">Limpiar Registro</button>
         <button onclick="closeActivityLogModal()" class="px-4 py-2 bg-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-semibold">Cerrar</button>
@@ -252,7 +233,7 @@
     </div>
   </div>
 
-  <!-- MODALS -->
+  <!-- PASSWORD MODAL -->
   <div id="passwordModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 sm:p-6 shadow-2xl flex flex-col">
       <div class="flex items-center space-x-3 mb-4 text-emerald-400">
@@ -264,7 +245,6 @@
           <p class="text-xs text-slate-400">Seleccione su usuario e ingrese su contraseña</p>
         </div>
       </div>
-
       <form onsubmit="verifyAdminPassword(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-medium text-slate-300 mb-1">Usuario / Administrador</label>
@@ -283,6 +263,7 @@
     </div>
   </div>
 
+  <!-- USERS ADMIN MODAL -->
   <div id="usersAdminModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
       <div class="p-4 sm:p-5 border-b border-slate-800 flex justify-between items-center bg-slate-900">
@@ -292,7 +273,7 @@
           </div>
           <div class="min-w-0">
             <h3 class="text-sm sm:text-lg font-bold font-serif-title text-emerald-400 truncate">Administración de Usuarios y Permisos</h3>
-            <p class="text-xs text-slate-400 truncate">Crea administradores y define sus permisos</p>
+            <p class="text-xs text-slate-400 truncate">Sincronizado en la nube</p>
           </div>
         </div>
         <button onclick="closeUsersAdminModal()" class="text-slate-400 hover:text-slate-200 flex-shrink-0"><i data-lucide="x" class="w-5 h-5"></i></button>
@@ -350,6 +331,7 @@
     </div>
   </div>
 
+  <!-- ADMIN PANEL MODAL -->
   <div id="adminPanelModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
       <div class="p-4 sm:p-5 border-b border-slate-800 flex justify-between items-center bg-slate-900">
@@ -364,7 +346,7 @@
         </div>
         <button onclick="closeAdminPanel()" class="text-slate-400 hover:text-slate-200 flex-shrink-0"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-      <div class="p-3 sm:p-4 border-b border-slate-800 bg-slate-950/60 flex flex-col sm:flex-row gap-3 items-center justify-end">
+      <div class="p-3 sm:p-4 border-b border-slate-800 bg-slate-950/60 flex justify-end">
         <button onclick="openSongModal()" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10">
           <i data-lucide="plus" class="w-4 h-4"></i> Agregar Nuevo Canto
         </button>
@@ -388,6 +370,7 @@
     </div>
   </div>
 
+  <!-- SONG MODAL -->
   <div id="songModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
       <div class="p-4 sm:p-5 border-b border-slate-800 flex justify-between items-center">
@@ -422,6 +405,7 @@
     </div>
   </div>
 
+  <!-- PLANNER MODAL -->
   <div id="plannerModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
       <div class="p-4 sm:p-5 border-b border-slate-800 flex justify-between items-center bg-slate-900">
@@ -443,11 +427,11 @@
         </div>
         <div id="plannerSectionsList" class="space-y-3 pt-2"></div>
       </div>
-      <div class="p-3 sm:p-4 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-3 bg-slate-950">
-        <button onclick="resetPlanSelection()" class="w-full sm:w-auto px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 rounded-xl text-xs font-medium border border-slate-700">Limpiar Plan</button>
-        <div class="flex space-x-2 w-full sm:w-auto justify-end">
+      <div class="p-3 sm:p-4 border-t border-slate-800 flex justify-between items-center bg-slate-950">
+        <button onclick="resetPlanSelection()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 rounded-xl text-xs font-medium border border-slate-700">Limpiar Plan</button>
+        <div class="flex space-x-2">
           <button onclick="closePlannerModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-semibold">Cancelar</button>
-          <button onclick="savePlannerPlan()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10">
+          <button onclick="savePlannerPlan()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 rounded-xl text-xs font-bold flex items-center gap-1.5">
             <i data-lucide="save" class="w-4 h-4"></i> Guardar Plan
           </button>
         </div>
@@ -455,13 +439,14 @@
     </div>
   </div>
 
+  <!-- MASS MODE MODAL -->
   <div id="massModeModal" class="fixed inset-0 bg-slate-950 z-50 flex flex-col hidden overflow-hidden">
     <header class="bg-slate-900 border-b border-slate-800 px-3 sm:px-4 py-3 flex items-center justify-between gap-2">
       <div class="flex items-center space-x-2 sm:space-x-3 min-w-0">
-        <button onclick="toggleMassSidebar()" id="massSidebarToggleBtn" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded-lg border border-slate-700 transition flex items-center justify-center theme-icon-color duration-300" title="Mostrar/Ocultar Guía Litúrgica">
+        <button onclick="toggleMassSidebar()" id="massSidebarToggleBtn" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded-lg border border-slate-700 transition flex items-center justify-center theme-icon-color duration-300">
           <i data-lucide="list" class="w-4 h-4"></i>
         </button>
-        <span id="massModeBadge" class="bg-emerald-600 text-slate-950 font-bold text-[10px] sm:text-xs px-2 sm:px-2.5 py-1 rounded-md uppercase tracking-wider flex-shrink-0 transition-colors duration-300">Misa En Vivo</span>
+        <span id="massModeBadge" class="bg-emerald-600 text-slate-950 font-bold text-[10px] sm:text-xs px-2 sm:px-2.5 py-1 rounded-md uppercase tracking-wider flex-shrink-0">Misa En Vivo</span>
         <span id="massStepIndicator" class="text-xs text-slate-400 truncate">Paso 1 de 14</span>
       </div>
       <div class="flex items-center space-x-2 flex-shrink-0">
@@ -478,18 +463,17 @@
           <div>
             <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4 sm:mb-6 gap-2">
               <div class="min-w-0 text-left">
-                <span id="massCurrentSection" class="text-xs text-emerald-400 font-bold uppercase tracking-wider block truncate transition-colors duration-300">Canto de Entrada</span>
+                <span id="massCurrentSection" class="text-xs text-emerald-400 font-bold uppercase tracking-wider block truncate">Canto de Entrada</span>
                 <h2 id="massCurrentTitle" class="text-xl sm:text-4xl font-bold font-serif-title text-slate-100 mt-1 truncate">Título del Canto</h2>
               </div>
             </div>
-            <div id="lyricsDisplay" style="display:none"></div>
             <div id="massLyricsDisplay" class="font-chord text-lg sm:text-2xl leading-relaxed text-slate-100 whitespace-pre-wrap text-left"></div>
           </div>
           <div class="mt-6 sm:mt-8 pt-4 border-t border-slate-800 flex items-center justify-between gap-3">
             <button onclick="prevMassStep()" class="flex-1 py-2.5 sm:py-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 rounded-xl font-semibold text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2">
               <i data-lucide="chevron-left" class="w-4 h-4"></i> Anterior
             </button>
-            <button id="massNextBtn" onclick="nextMassStep()" class="flex-1 py-2.5 sm:py-3 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 shadow-lg shadow-emerald-600/20 transition-colors duration-300">
+            <button id="massNextBtn" onclick="nextMassStep()" class="flex-1 py-2.5 sm:py-3 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 shadow-lg">
               Siguiente <i data-lucide="chevron-right" class="w-4 h-4"></i>
             </button>
           </div>
@@ -498,15 +482,14 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT LOGIC -->
+  <!-- JAVASCRIPT & FIREBASE LOGIC -->
   <script>
     const DEFAULT_USERS = [
-      {
-        id: 'admin_root',
-        username: 'Enrique',
-        password: 'Alex150515',
-        permissions: { plan_mass: true, manage_songs: true, manage_users: true }
-      }
+      { id: 'admin_root', username: 'Enrique', password: 'Alex150515', permissions: { plan_mass: true, manage_songs: true, manage_users: true } }
+    ];
+    const DEFAULT_SONGS = [
+      { id: '1', title: 'Juntos como Hermanos', section: 'entrada', author: 'Cesáreo Gabaráin', lyrics: 'Juntos como hermanos,\nmiembros de una Iglesia,\nvamos caminando\nal encuentro del Señor.' },
+      { id: '2', title: 'Señor Ten Piedad', section: 'penitencial', author: 'Litúrgico', lyrics: 'Señor, ten piedad de nosotros. (2v)\nCristo, ten piedad de nosotros. (2v)' }
     ];
 
     let adminUsers = [];
@@ -516,6 +499,12 @@
     let isSidebarVisible = true;
     let isMassSidebarVisible = false;
     let activityLog = [];
+    let songs = [];
+    let massPlanSelection = {};
+    let currentSongId = null;
+    let fontSizeLevel = 16;
+    let currentMassStepIndex = 0;
+    let currentSeason = 'gold';
 
     const LITURGICAL_SECTIONS = [
       { id: 'entrada', name: '1. Canto de Entrada', category: 'Rito de Entrada' },
@@ -534,144 +523,117 @@
       { id: 'otros', name: '14. Otros / Varios', category: 'Repertorio General' }
     ];
 
-    const DEFAULT_SONGS = [
-      { id: '1', title: 'Juntos como Hermanos', section: 'entrada', author: 'Cesáreo Gabaráin', lyrics: 'Juntos como hermanos,\nmiembros de una Iglesia,\nvamos caminando\nal encuentro del Señor.' },
-      { id: '2', title: 'Señor Ten Piedad', section: 'penitencial', author: 'Litúrgico', lyrics: 'Señor, ten piedad de nosotros. (2v)\nCristo, ten piedad de nosotros. (2v)' }
-    ];
+    window.initFirebaseSync = function() {
+      const { collection, onSnapshot, doc, getDocs } = window.firebaseMethods;
+      const db = window.db;
 
-    let songs = [];
-    let currentSongId = null;
-    let fontSizeLevel = 16;
-    let massPlanSelection = {};
-    let currentMassStepIndex = 0;
+      // Sincronizar Cantos en tiempo real
+      onSnapshot(collection(db, "songs"), (snapshot) => {
+        songs = [];
+        snapshot.forEach(docSnap => {
+          songs.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        if (songs.length === 0) {
+          DEFAULT_SONGS.forEach(s => saveSongToFirebase(s));
+        }
+        renderLiturgicalNav();
+        renderAdminSongsList();
+        if (currentSongId) selectSong(currentSongId);
+      });
 
-    window.onload = function() {
-      loadUsersFromStorage();
-      loadSongsFromStorage();
-      loadPlanFromStorage();
-      loadActivityLogFromStorage();
-      
-      const savedSeason = localStorage.getItem('catholic_mass_season') || 'gold';
-      const seasonSelect = document.getElementById('seasonSelect');
-      if (seasonSelect) seasonSelect.value = savedSeason;
-      changeLiturgicalSeason(savedSeason, false);
+      // Sincronizar Plan de Misa en tiempo real
+      onSnapshot(collection(db, "plan"), (snapshot) => {
+        massPlanSelection = {};
+        snapshot.forEach(docSnap => {
+          massPlanSelection[docSnap.id] = docSnap.data().songId;
+        });
+        renderLiturgicalNav();
+      });
 
-      renderLiturgicalNav();
-      populateFormSections();
-      updateAdminLockStatus();
-
-      window.addEventListener('storage', (e) => {
-        if (e.key === 'catholic_mass_admin_users') {
-          loadUsersFromStorage();
-        }
-        if (e.key === 'catholic_mass_saved_plan') {
-          loadPlanFromStorage();
-          renderLiturgicalNav();
-          const massModal = document.getElementById('massModeModal');
-          if (massModal && !massModal.classList.contains('hidden')) {
-            renderMassSteps();
-            selectMassStep(currentMassStepIndex);
-          }
-        }
-        if (e.key === 'catholic_mass_songs') {
-          loadSongsFromStorage();
-          renderLiturgicalNav();
-          const adminModal = document.getElementById('adminPanelModal');
-          if (adminModal && !adminModal.classList.contains('hidden')) {
-            renderAdminSongsList();
-          }
-          if (currentSongId) selectSong(currentSongId);
-        }
-        if (e.key === 'catholic_mass_season') {
-          const newSeason = e.newValue || 'gold';
-          const seasonSel = document.getElementById('seasonSelect');
-          if (seasonSel) seasonSel.value = newSeason;
-          changeLiturgicalSeason(newSeason, false);
-        }
-        if (e.key === 'catholic_mass_activity_log') {
-          loadActivityLogFromStorage();
+      // Sincronizar Usuarios Administradores
+      onSnapshot(collection(db, "users"), (snapshot) => {
+        adminUsers = [];
+        snapshot.forEach(docSnap => {
+          adminUsers.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        if (adminUsers.length === 0) {
+          DEFAULT_USERS.forEach(u => saveUserToFirebase(u));
         }
       });
-      
-      const firstAssignedSec = LITURGICAL_SECTIONS.find(sec => massPlanSelection[sec.id]);
-      if (firstAssignedSec && massPlanSelection[firstAssignedSec.id]) {
-        selectSong(massPlanSelection[firstAssignedSec.id]);
-      } else {
-        currentSongId = null;
-        document.getElementById('songContent').classList.add('hidden');
-        document.getElementById('emptyState').classList.remove('hidden');
-      }
-      
+
+      // Sincronizar Configuración (Temporada Litúrgica)
+      onSnapshot(doc(db, "config", "season"), (docSnap) => {
+        if (docSnap.exists()) {
+          currentSeason = docSnap.data().value || 'gold';
+          const seasonSel = document.getElementById('seasonSelect');
+          if (seasonSel) seasonSel.value = currentSeason;
+          changeLiturgicalSeason(currentSeason, false);
+        }
+      });
+
+      // Sincronizar Registro de Actividad
+      onSnapshot(collection(db, "activityLog"), (snapshot) => {
+        activityLog = [];
+        snapshot.forEach(docSnap => {
+          activityLog.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        activityLog.sort((a, b) => b.timestamp - a.timestamp);
+        renderActivityLogTable();
+      });
+    };
+
+    window.onload = function() {
+      populateFormSections();
+      updateAdminLockStatus();
       lucide.createIcons();
     };
 
-    function logActivity(actionDesc) {
-      const username = currentActiveUser ? currentActiveUser.username : 'Desconocido';
-      const now = new Date();
-      const timeStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      
-      const logEntry = {
-        id: 'log_' + Date.now(),
-        time: timeStr,
-        user: username,
-        action: actionDesc
-      };
-
-      activityLog.unshift(logEntry);
-      if (activityLog.length > 50) activityLog.pop();
-      saveActivityLogToStorage();
-    }
-
-    function loadActivityLogFromStorage() {
-      const stored = localStorage.getItem('catholic_mass_activity_log');
-      if (stored) {
-        try { activityLog = JSON.parse(stored); } catch(e) { activityLog = []; }
-      }
-    }
-
-    function saveActivityLogToStorage() {
-      localStorage.setItem('catholic_mass_activity_log', JSON.stringify(activityLog));
-    }
-
-    function openActivityLogModal() {
-      document.getElementById('activityLogModal').classList.remove('hidden');
-      renderActivityLogTable();
-      lucide.createIcons();
-    }
-
-    function closeActivityLogModal() {
-      document.getElementById('activityLogModal').classList.add('hidden');
-    }
-
-    function renderActivityLogTable() {
-      const tbody = document.getElementById('activityLogTableBody');
-      tbody.innerHTML = '';
-
-      if (activityLog.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500">No hay registros de actividad recientes.</td></tr>`;
-        return;
-      }
-
-      activityLog.forEach(log => {
-        const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-800/40 transition';
-        tr.innerHTML = `
-          <td class="p-3 text-slate-400 text-[11px]">${log.time}</td>
-          <td class="p-3 font-bold text-amber-400">${log.user}</td>
-          <td class="p-3 text-slate-200">${log.action}</td>
-        `;
-        tbody.appendChild(tr);
+    // Funciones de Guardado en Firebase
+    async function saveSongToFirebase(song) {
+      const { doc, setDoc } = window.firebaseMethods;
+      await setDoc(doc(window.db, "songs", song.id.toString()), {
+        title: song.title, section: song.section, author: song.author || '', lyrics: song.lyrics
       });
     }
 
-    function clearActivityLog() {
-      if (confirm('¿Deseas limpiar todo el registro de actividad?')) {
-        activityLog = [];
-        saveActivityLogToStorage();
-        renderActivityLogTable();
+    async function deleteSongFromFirebase(id) {
+      const { doc, deleteDoc } = window.firebaseMethods;
+      await deleteDoc(doc(window.db, "songs", id));
+    }
+
+    async function savePlanToFirebase() {
+      const { doc, setDoc, getDocs, collection, deleteDoc } = window.firebaseMethods;
+      const querySnapshot = await getDocs(collection(window.db, "plan"));
+      for (const d of querySnapshot.docs) {
+        await deleteDoc(doc(window.db, "plan", d.id));
+      }
+      for (const [secId, songId] of Object.entries(massPlanSelection)) {
+        await setDoc(doc(window.db, "plan", secId), { songId });
       }
     }
 
+    async function saveUserToFirebase(user) {
+      const { doc, setDoc } = window.firebaseMethods;
+      await setDoc(doc(window.db, "users", user.id), user);
+    }
+
+    async function deleteUserFromFirebase(id) {
+      const { doc, deleteDoc } = window.firebaseMethods;
+      await deleteDoc(doc(window.db, "users", id));
+    }
+
+    async function logActivity(actionDesc) {
+      const username = currentActiveUser ? currentActiveUser.username : 'Desconocido';
+      const now = new Date();
+      const timeStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const { doc, setDoc } = window.firebaseMethods;
+      const logId = 'log_' + Date.now();
+      await setDoc(doc(window.db, "activityLog", logId), {
+        time: timeStr, user: username, action: actionDesc, timestamp: Date.now()
+      });
+    }
+
+    // Lógica General de Interfaz
     function toggleSidebar() {
       const sidebar = document.getElementById('liturgySidebar');
       const icon = document.getElementById('sidebarToggleIcon');
@@ -693,26 +655,12 @@
       else sidebar.classList.add('hidden');
     }
 
-    function loadUsersFromStorage() {
-      const stored = localStorage.getItem('catholic_mass_admin_users');
-      if (stored) {
-        try { adminUsers = JSON.parse(stored); } catch(e) { adminUsers = DEFAULT_USERS; }
-      } else {
-        adminUsers = DEFAULT_USERS;
-        saveUsersToStorage();
-      }
-    }
-
-    function saveUsersToStorage() {
-      localStorage.setItem('catholic_mass_admin_users', JSON.stringify(adminUsers));
-    }
-
     function handlePermissionAction(requiredPerm, callback) {
       if (currentActiveUser) {
         if (currentActiveUser.permissions && currentActiveUser.permissions[requiredPerm]) {
           callback();
         } else {
-          alert(`Acceso denegado: Tu usuario (${currentActiveUser.username}) no tiene permiso para esta función.`);
+          alert(`Acceso denegado: Tu usuario (${currentActiveUser.username}) no tiene permiso.`);
         }
       } else {
         requiredPermissionForAction = requiredPerm;
@@ -722,7 +670,6 @@
     }
 
     function openPasswordModal() {
-      loadUsersFromStorage();
       const modal = document.getElementById('passwordModal');
       const userSelect = document.getElementById('adminUserSelect');
       userSelect.innerHTML = '';
@@ -746,7 +693,6 @@
 
     function verifyAdminPassword(e) {
       e.preventDefault();
-      loadUsersFromStorage();
       const userId = document.getElementById('adminUserSelect').value;
       const pwd = document.getElementById('adminPasswordInput').value;
       const user = adminUsers.find(u => u.id === userId && u.password === pwd);
@@ -782,28 +728,22 @@
 
     function updateAdminLockStatus() {
       const btn = document.getElementById('adminSessionBtn');
-      const icon = document.getElementById('adminLockIcon');
       const seasonContainer = document.getElementById('seasonSelectorContainer');
       const activityLogBtn = document.getElementById('activityLogBtn');
       if (!btn) return;
 
       if (currentActiveUser) {
-        btn.className = "p-1.5 sm:p-2 rounded-lg bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/30 transition flex items-center gap-1.5";
+        btn.className = "p-1.5 sm:p-2 rounded-lg bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 transition flex items-center gap-1.5";
         btn.innerHTML = `<i data-lucide="unlock" class="w-4 h-4"></i> <span class="text-xs font-bold hidden sm:inline">${currentActiveUser.username}</span>`;
-        btn.title = `Cerrar sesión de ${currentActiveUser.username}`;
         if (seasonContainer) seasonContainer.classList.remove('hidden');
-        
-        if (activityLogBtn) {
-          if (currentActiveUser.username.trim().toLowerCase() === 'enrique') {
-            activityLogBtn.classList.remove('hidden');
-          } else {
-            activityLogBtn.classList.add('hidden');
-          }
+        if (activityLogBtn && currentActiveUser.username.trim().toLowerCase() === 'enrique') {
+          activityLogBtn.classList.remove('hidden');
+        } else if (activityLogBtn) {
+          activityLogBtn.classList.add('hidden');
         }
       } else {
         btn.className = "p-1.5 sm:p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-200 transition";
-        btn.innerHTML = `<i data-lucide="lock" id="adminLockIcon" class="w-4 h-4 text-slate-400"></i>`;
-        btn.title = "Iniciar Sesión de Administrador";
+        btn.innerHTML = `<i data-lucide="lock" class="w-4 h-4 text-slate-400"></i>`;
         if (seasonContainer) seasonContainer.classList.add('hidden');
         if (activityLogBtn) activityLogBtn.classList.add('hidden');
       }
@@ -816,10 +756,7 @@
       renderUsersTable();
       lucide.createIcons();
     }
-
-    function closeUsersAdminModal() {
-      document.getElementById('usersAdminModal').classList.add('hidden');
-    }
+    function closeUsersAdminModal() { document.getElementById('usersAdminModal').classList.add('hidden'); }
 
     function resetUserForm() {
       document.getElementById('editUserId').value = '';
@@ -832,7 +769,6 @@
     }
 
     function renderUsersTable() {
-      loadUsersFromStorage();
       const tbody = document.getElementById('usersTableBody');
       tbody.innerHTML = '';
       adminUsers.forEach(u => {
@@ -854,26 +790,19 @@
       });
     }
 
-    function saveUserAdmin(e) {
+    async function saveUserAdmin(e) {
       e.preventDefault();
-      const id = document.getElementById('editUserId').value;
+      const id = document.getElementById('editUserId').value || 'user_' + Date.now();
       const username = document.getElementById('userNameInput').value.trim();
       const password = document.getElementById('userPasswordInput').value.trim();
       const permissions = {
-        plan_mass: document.getElementById('permPlanMass').checked,
-        manage_songs: document.getElementById('permManageSongs').checked,
-        manage_users: document.getElementById('permManageUsers').checked
+        plan_mass: document.getElementById('permPlanMass'].checked,
+        manage_songs: document.getElementById('permManageSongs'].checked,
+        manage_users: document.getElementById('permManageUsers'].checked
       };
       if (!username || !password) return;
-      if (id) {
-        const idx = adminUsers.findIndex(u => u.id === id);
-        if (idx !== -1) adminUsers[idx] = { id, username, password, permissions };
-        logActivity(`Modificó permisos/datos del administrador: ${username}`);
-      } else {
-        adminUsers.push({ id: 'user_' + Date.now(), username, password, permissions });
-        logActivity(`Dio de alta un nuevo administrador: ${username}`);
-      }
-      saveUsersToStorage();
+      await saveUserToFirebase({ id, username, password, permissions });
+      logActivity(`Actualizó/Agregó al administrador: ${username}`);
       resetUserForm();
       renderUsersTable();
     }
@@ -890,20 +819,19 @@
       document.getElementById('userFormTitle').textContent = `Editar Usuario: ${u.username}`;
     }
 
-    function deleteUserAdmin(id) {
+    async function deleteUserAdmin(id) {
       if (adminUsers.length <= 1) {
-        alert('Debe existir al menos un administrador en el sistema.');
+        alert('Debe existir al menos un administrador.');
         return;
       }
       const uToDelete = adminUsers.find(u => u.id === id);
       if (confirm('¿Desea eliminar este usuario administrador?')) {
-        adminUsers = adminUsers.filter(u => u.id !== id);
+        await deleteUserFromFirebase(id);
         if (uToDelete) logActivity(`Eliminó al administrador: ${uToDelete.username}`);
         if (currentActiveUser && currentActiveUser.id === id) {
           currentActiveUser = null;
           updateAdminLockStatus();
         }
-        saveUsersToStorage();
         renderUsersTable();
       }
     }
@@ -913,10 +841,7 @@
       renderAdminSongsList();
       lucide.createIcons();
     }
-
-    function closeAdminPanel() {
-      document.getElementById('adminPanelModal').classList.add('hidden');
-    }
+    function closeAdminPanel() { document.getElementById('adminPanelModal').classList.add('hidden'); }
 
     function renderAdminSongsList() {
       const tbody = document.getElementById('adminSongsTableBody');
@@ -933,8 +858,8 @@
           <td class="p-3 text-emerald-400">${getSectionName(song.section)}</td>
           <td class="p-3 text-slate-400">${song.author || 'Tradicional'}</td>
           <td class="p-3 text-right space-x-2">
-            <button onclick="editSongFromAdmin('${song.id}')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700 text-xs">Editar</button>
-            <button onclick="handlePermissionAction('manage_songs', () => deleteSongById('${song.id}'))" class="px-2.5 py-1 bg-red-950/60 hover:bg-red-900/80 text-red-300 rounded border border-red-800/80 text-xs">Eliminar</button>
+            <button onclick="editSongFromAdmin('${song.id}')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs">Editar</button>
+            <button onclick="handlePermissionAction('manage_songs', () => deleteSongById('${song.id}'))" class="px-2.5 py-1 bg-red-950/60 hover:bg-red-900 text-red-300 rounded text-xs">Eliminar</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -947,138 +872,147 @@
       openSongModal(id);
     }
 
-    function deleteSongById(id) {
+    async function deleteSongById(id) {
       const songToDelete = songs.find(s => s.id === id);
       const songTitle = songToDelete ? songToDelete.title : 'este canto';
-      if (confirm(`¿Estás seguro de que deseas eliminar "${songTitle}"?`)) {
-        songs = songs.filter(s => s.id !== id);
+      if (confirm(`¿Estás seguro de eliminar "${songTitle}"?`)) {
+        await deleteSongFromFirebase(id);
         Object.keys(massPlanSelection).forEach(secId => {
           if (massPlanSelection[secId] === id) delete massPlanSelection[secId];
         });
+        await savePlanToFirebase();
         logActivity(`Eliminó el canto: "${songTitle}"`);
-        savePlanToStorage();
-        saveSongsToStorage();
         renderAdminSongsList();
         renderLiturgicalNav();
-        if (currentSongId === id) {
-          currentSongId = null;
-          document.getElementById('songContent').classList.add('hidden');
-          document.getElementById('emptyState').classList.remove('hidden');
+      }
+    }
+
+    function openSongModal(editId = null) {
+      document.getElementById('songModal').classList.remove('hidden');
+      document.getElementById('songForm').reset();
+      if (editId) {
+        const song = songs.find(s => s.id === editId);
+        if (song) {
+          document.getElementById('modalTitle').textContent = 'Editar Canto Litúrgico';
+          document.getElementById('formSongId').value = song.id;
+          document.getElementById('formTitle').value = song.title;
+          document.getElementById('formSection').value = song.section;
+          document.getElementById('formAuthor').value = song.author || '';
+          document.getElementById('formLyrics').value = song.lyrics || '';
         }
-      }
-    }
-
-    function loadSongsFromStorage() {
-      const stored = localStorage.getItem('catholic_mass_songs');
-      if (stored) {
-        try { songs = JSON.parse(stored); } catch(e) { songs = DEFAULT_SONGS; }
       } else {
-        songs = DEFAULT_SONGS;
-        saveSongsToStorage();
+        document.getElementById('modalTitle').textContent = 'Agregar Canto Litúrgico';
+        document.getElementById('formSongId').value = '';
       }
+      lucide.createIcons();
+    }
+    function closeSongModal() { document.getElementById('songModal').classList.add('hidden'); }
+
+    async function saveSong(e) {
+      e.preventDefault();
+      const id = document.getElementById('formSongId').value || Date.now().toString();
+      const title = document.getElementById('formTitle').value.trim();
+      const section = document.getElementById('formSection').value;
+      const author = document.getElementById('formAuthor').value.trim();
+      const lyrics = document.getElementById('formLyrics').value.trim();
+
+      if (!title || !lyrics) return;
+
+      await saveSongToFirebase({ id, title, section, author, lyrics });
+      logActivity(`Guardó el canto: "${title}"`);
+      closeSongModal();
+      selectSong(id);
     }
 
-    function saveSongsToStorage() {
-      localStorage.setItem('catholic_mass_songs', JSON.stringify(songs));
-    }
+    function editCurrentSong() { if (currentSongId) openSongModal(currentSongId); }
+    function deleteCurrentSong() { if (currentSongId) deleteSongById(currentSongId); }
 
-    function loadPlanFromStorage() {
-      const storedPlan = localStorage.getItem('catholic_mass_saved_plan');
-      if (storedPlan) {
-        try { massPlanSelection = JSON.parse(storedPlan); } catch(e) { massPlanSelection = {}; }
-      }
-    }
+    function openPlannerModal() {
+      document.getElementById('plannerModal').classList.remove('hidden');
+      const container = document.getElementById('plannerSectionsList');
+      container.innerHTML = '';
 
-    function savePlanToStorage() {
-      localStorage.setItem('catholic_mass_saved_plan', JSON.stringify(massPlanSelection));
-      updateActivePlanBanner();
-    }
+      LITURGICAL_SECTIONS.forEach(sec => {
+        const categorySongs = songs.filter(s => s.section === sec.id);
+        const otherSongs = songs.filter(s => s.section !== sec.id);
+        const row = document.createElement('div');
+        row.className = 'p-3 bg-slate-950 border border-slate-800 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2';
+        
+        let optionsHtml = `<option value="">-- (Sin canto asignado) --</option>`;
+        if (categorySongs.length > 0) {
+          optionsHtml += `<optgroup label="Cantos de ${sec.name}">`;
+          categorySongs.forEach(s => {
+            const isSelected = massPlanSelection[sec.id] === s.id;
+            optionsHtml += `<option value="${s.id}" ${isSelected ? 'selected' : ''}>${s.title}</option>`;
+          });
+          optionsHtml += `</optgroup>`;
+        }
+        if (otherSongs.length > 0) {
+          optionsHtml += `<optgroup label="Otros cantos">`;
+          otherSongs.forEach(s => {
+            const isSelected = massPlanSelection[sec.id] === s.id;
+            optionsHtml += `<option value="${s.id}" ${isSelected ? 'selected' : ''}>${s.title} - [${getSectionName(s.section)}]</option>`;
+          });
+          optionsHtml += `</optgroup>`;
+        }
 
-    function updateActivePlanBanner() {
-      const banner = document.getElementById('activePlanBanner');
-      if (!banner) return;
-      const count = Object.keys(massPlanSelection).length;
-      if (count > 0) {
-        banner.textContent = `Plan Guardado (${count})`;
-        banner.classList.remove('hidden');
-      } else {
-        banner.classList.add('hidden');
-      }
-    }
-
-    function promptChangeSeason(newSeason) {
-      const seasonNames = {
-        'gold': 'Ordinario (Verde)',
-        'purple': 'Cuaresma/Adviento (Morado)',
-        'red': 'Fiestas/Pentecostés (Rojo)',
-        'white': 'Pascua/Solemnidades (Blanco)'
-      };
-
-      const confirmMsg = `¿Deseas guardar y aplicar el cambio de color litúrgico a "${seasonNames[newSeason]}" para todos los usuarios?`;
-      
-      if (confirm(confirmMsg)) {
-        logActivity(`Cambió el tiempo litúrgico a: ${seasonNames[newSeason]}`);
-        changeLiturgicalSeason(newSeason, true);
-      } else {
-        const currentSaved = localStorage.getItem('catholic_mass_season') || 'gold';
-        document.getElementById('seasonSelect').value = currentSaved;
-      }
-    }
-
-    function changeLiturgicalSeason(season, saveToStorage = false) {
-      if (saveToStorage) {
-        localStorage.setItem('catholic_mass_season', season);
-      }
-
-      const badge = document.getElementById('liturgicBadge');
-      const titleHeader = document.getElementById('mainTitleHeader');
-      const sidebarTitle = document.getElementById('sidebarHeaderTitle');
-      const massCurrentSection = document.getElementById('massCurrentSection');
-      const massModeBadge = document.getElementById('massModeBadge');
-      const massNextBtn = document.getElementById('massNextBtn');
-      const massModeMainBtn = document.getElementById('massModeMainBtn');
-      const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
-      
-      if (!badge || !titleHeader) return;
-
-      badge.className = "w-8 h-8 sm:w-10 sm:h-10 rounded-xl border flex items-center justify-center shadow-lg transition-colors duration-300 flex-shrink-0 ";
-      
-      let textColorClass = "", borderBadgeClass = "", bgBadgeClass = "", solidBgClass = "", solidHoverClass = "", shadowColorClass = "";
-
-      if (season === 'purple') {
-        bgBadgeClass = 'bg-purple-900/60'; borderBadgeClass = 'border-purple-500'; textColorClass = 'text-purple-400';
-        solidBgClass = 'bg-purple-700'; solidHoverClass = 'hover:bg-purple-600'; shadowColorClass = 'shadow-purple-700/20';
-      } else if (season === 'red') {
-        bgBadgeClass = 'bg-red-900/60'; borderBadgeClass = 'border-red-500'; textColorClass = 'text-red-400';
-        solidBgClass = 'bg-red-700'; solidHoverClass = 'hover:bg-red-600'; shadowColorClass = 'shadow-red-700/20';
-      } else if (season === 'white') {
-        bgBadgeClass = 'bg-sky-900/60'; borderBadgeClass = 'border-sky-400'; textColorClass = 'text-sky-300';
-        solidBgClass = 'bg-sky-600'; solidHoverClass = 'hover:bg-sky-500'; shadowColorClass = 'shadow-sky-600/20';
-      } else {
-        bgBadgeClass = 'bg-emerald-900/60'; borderBadgeClass = 'border-emerald-500'; textColorClass = 'text-emerald-400';
-        solidBgClass = 'bg-emerald-600'; solidHoverClass = 'hover:bg-emerald-500'; shadowColorClass = 'shadow-emerald-600/20';
-      }
-
-      badge.classList.add(bgBadgeClass, borderBadgeClass, textColorClass);
-      titleHeader.className = `font-serif-title text-xs sm:text-lg font-bold tracking-wide ${textColorClass} truncate transition-colors duration-300`;
-      if (sidebarTitle) sidebarTitle.className = `text-xs font-bold ${textColorClass} uppercase tracking-wider flex items-center gap-1.5 transition-colors duration-300`;
-      if (massCurrentSection) massCurrentSection.className = `text-xs ${textColorClass} font-bold uppercase tracking-wider block truncate transition-colors duration-300`;
-      if (sidebarToggleBtn) sidebarToggleBtn.className = `absolute -left-3 top-4 z-20 bg-slate-800 hover:bg-slate-700 ${textColorClass} border border-slate-700 p-1.5 rounded-full shadow-lg transition hidden md:flex items-center justify-center duration-300`;
-
-      document.querySelectorAll('.theme-icon-color').forEach(el => {
-        el.className = `w-4 h-4 theme-icon-color ${textColorClass} transition-colors duration-300`;
+        row.innerHTML = `
+          <div class="sm:w-1/2">
+            <span class="text-xs font-bold text-emerald-400 block">${sec.name}</span>
+            <span class="text-[11px] text-slate-500">${sec.category}</span>
+          </div>
+          <select onchange="updatePlanSelection('${sec.id}', this.value)" class="sm:w-1/2 bg-slate-900 border border-slate-800 text-slate-200 text-xs rounded-lg p-2 focus:outline-none focus:border-emerald-500">
+            ${optionsHtml}
+          </select>
+        `;
+        container.appendChild(row);
       });
+      lucide.createIcons();
+    }
+    function closePlannerModal() { document.getElementById('plannerModal').classList.add('hidden'); }
 
-      if (massModeBadge) massModeBadge.className = `${solidBgClass} text-slate-950 font-bold text-[10px] sm:text-xs px-2 sm:px-2.5 py-1 rounded-md uppercase tracking-wider flex-shrink-0 transition-colors duration-300`;
-      if (massNextBtn) massNextBtn.className = `flex-1 py-2.5 sm:py-3 ${solidBgClass} ${solidHoverClass} text-slate-950 font-bold rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 shadow-lg ${shadowColorClass} transition-colors duration-300`;
-      if (massModeMainBtn) massModeMainBtn.className = `${solidBgClass} ${solidHoverClass} text-slate-950 font-semibold p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs flex items-center space-x-1 shadow-md ${shadowColorClass} transition duration-300`;
+    function updatePlanSelection(sectionId, songId) {
+      if (songId) massPlanSelection[sectionId] = songId;
+      else delete massPlanSelection[sectionId];
+    }
+
+    async function resetPlanSelection() {
+      if (confirm('¿Deseas reiniciar el plan de misa?')) {
+        massPlanSelection = {};
+        await savePlanToFirebase();
+        logActivity(`Reinició el plan de misa.`);
+        openPlannerModal();
+        renderLiturgicalNav();
+      }
+    }
+
+    async function savePlannerPlan() {
+      await savePlanToFirebase();
+      logActivity(`Guardó y sincronizó el plan de misa.`);
+      closePlannerModal();
+      renderLiturgicalNav();
+      
+      const firstSection = LITURGICAL_SECTIONS.find(sec => massPlanSelection[sec.id]);
+      if (firstSection && massPlanSelection[firstSection.id]) {
+        selectSong(massPlanSelection[firstSection.id]);
+      } else {
+        currentSongId = null;
+        document.getElementById('songContent').classList.add('hidden');
+        document.getElementById('emptyState').classList.remove('hidden');
+      }
     }
 
     function renderLiturgicalNav() {
       const navContainer = document.getElementById('liturgyNav');
+      if (!navContainer) return;
       navContainer.innerHTML = '';
       let currentCategory = '';
-      updateActivePlanBanner();
+      const count = Object.keys(massPlanSelection).length;
+      const banner = document.getElementById('activePlanBanner');
+      if (banner) {
+        if (count > 0) { banner.textContent = `Plan Sincronizado (${count})`; banner.classList.remove('hidden'); }
+        else banner.classList.add('hidden');
+      }
 
       LITURGICAL_SECTIONS.forEach(sec => {
         if (sec.category !== currentCategory) {
@@ -1106,9 +1040,7 @@
           const planItem = document.createElement('button');
           planItem.onclick = () => selectSong(plannedSong.id);
           planItem.className = `w-full text-left px-2.5 py-1.5 rounded-lg text-xs truncate transition flex items-center justify-between ${
-            plannedSong.id === currentSongId 
-              ? 'bg-emerald-500 text-slate-950 font-bold border border-emerald-400' 
-              : 'bg-emerald-500/20 text-emerald-300 font-medium border border-emerald-500/40 hover:bg-emerald-500/30'
+            plannedSong.id === currentSongId ? 'bg-emerald-500 text-slate-950 font-bold border border-emerald-400' : 'bg-emerald-500/20 text-emerald-300 font-medium border border-emerald-500/40 hover:bg-emerald-500/30'
           }`;
           planItem.innerHTML = `<span class="truncate flex items-center gap-1.5"><i data-lucide="star" class="w-3 h-3 text-emerald-400 fill-current flex-shrink-0"></i> ${plannedSong.title}</span>`;
           slotContainer.appendChild(planItem);
@@ -1164,6 +1096,7 @@
 
     function populateFormSections() {
       const select = document.getElementById('formSection');
+      if (!select) return;
       select.innerHTML = '';
       LITURGICAL_SECTIONS.forEach(sec => {
         const opt = document.createElement('option');
@@ -1173,145 +1106,68 @@
       });
     }
 
-    function openSongModal(editId = null) {
-      document.getElementById('songModal').classList.remove('hidden');
-      const form = document.getElementById('songForm');
-      form.reset();
-      if (editId) {
-        const song = songs.find(s => s.id === editId);
-        if (song) {
-          document.getElementById('modalTitle').textContent = 'Editar Canto Litúrgico';
-          document.getElementById('formSongId').value = song.id;
-          document.getElementById('formTitle').value = song.title;
-          document.getElementById('formSection').value = song.section;
-          document.getElementById('formAuthor').value = song.author || '';
-          document.getElementById('formLyrics').value = song.lyrics || '';
-        }
+    async function promptChangeSeason(newSeason) {
+      const seasonNames = {
+        'gold': 'Ordinario (Verde)',
+        'purple': 'Cuaresma/Adviento (Morado)',
+        'red': 'Fiestas/Pentecostés (Rojo)',
+        'white': 'Pascua/Solemnidades (Blanco)'
+      };
+      if (confirm(`¿Deseas aplicar el color litúrgico "${seasonNames[newSeason]}" para todos los dispositivos en tiempo real?`)) {
+        const { doc, setDoc } = window.firebaseMethods;
+        await setDoc(doc(window.db, "config", "season"), { value: newSeason });
+        logActivity(`Cambió el tiempo litúrgico a: ${seasonNames[newSeason]}`);
       } else {
-        document.getElementById('modalTitle').textContent = 'Agregar Canto Litúrgico';
-        document.getElementById('formSongId').value = '';
-      }
-      lucide.createIcons();
-    }
-
-    function closeSongModal() {
-      document.getElementById('songModal').classList.add('hidden');
-    }
-
-    function saveSong(e) {
-      e.preventDefault();
-      const id = document.getElementById('formSongId').value;
-      const title = document.getElementById('formTitle').value.trim();
-      const section = document.getElementById('formSection').value;
-      const author = document.getElementById('formAuthor').value.trim();
-      const lyrics = document.getElementById('formLyrics').value.trim();
-
-      if (!title || !lyrics) return;
-
-      if (id) {
-        const index = songs.findIndex(s => s.id === id);
-        if (index !== -1) songs[index] = { id, title, section, author, lyrics };
-        logActivity(`Actualizó el canto: "${title}"`);
-      } else {
-        const newSong = { id: Date.now().toString(), title, section, author, lyrics };
-        songs.push(newSong);
-        currentSongId = newSong.id;
-        logActivity(`Agregó un nuevo canto: "${title}"`);
-      }
-
-      saveSongsToStorage();
-      closeSongModal();
-      renderLiturgicalNav();
-      if (currentSongId) selectSong(currentSongId);
-    }
-
-    function editCurrentSong() {
-      if (currentSongId) openSongModal(currentSongId);
-    }
-
-    function deleteCurrentSong() {
-      if (!currentSongId) return;
-      deleteSongById(currentSongId);
-    }
-
-    function openPlannerModal() {
-      document.getElementById('plannerModal').classList.remove('hidden');
-      const container = document.getElementById('plannerSectionsList');
-      container.innerHTML = '';
-
-      LITURGICAL_SECTIONS.forEach(sec => {
-        const categorySongs = songs.filter(s => s.section === sec.id);
-        const otherSongs = songs.filter(s => s.section !== sec.id);
-        const row = document.createElement('div');
-        row.className = 'p-3 bg-slate-950 border border-slate-800 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2';
-        
-        let optionsHtml = `<option value="">-- (Seleccionar canto) --</option>`;
-        if (categorySongs.length > 0) {
-          optionsHtml += `<optgroup label="Cantos de ${sec.name}">`;
-          categorySongs.forEach(s => {
-            const isSelected = massPlanSelection[sec.id] === s.id;
-            optionsHtml += `<option value="${s.id}" ${isSelected ? 'selected' : ''}>${s.title}</option>`;
-          });
-          optionsHtml += `</optgroup>`;
-        }
-        if (otherSongs.length > 0) {
-          optionsHtml += `<optgroup label="Otros (Ver todos los cantos)">`;
-          otherSongs.forEach(s => {
-            const isSelected = massPlanSelection[sec.id] === s.id;
-            optionsHtml += `<option value="${s.id}" ${isSelected ? 'selected' : ''}>${s.title} - [${getSectionName(s.section)}]</option>`;
-          });
-          optionsHtml += `</optgroup>`;
-        }
-
-        row.innerHTML = `
-          <div class="sm:w-1/2">
-            <span class="text-xs font-bold text-emerald-400 block">${sec.name}</span>
-            <span class="text-[11px] text-slate-500">${sec.category}</span>
-          </div>
-          <select onchange="updatePlanSelection('${sec.id}', this.value)" class="sm:w-1/2 bg-slate-900 border border-slate-800 text-slate-200 text-xs rounded-lg p-2 focus:outline-none focus:border-emerald-500">
-            ${optionsHtml}
-          </select>
-        `;
-        container.appendChild(row);
-      });
-      lucide.createIcons();
-    }
-
-    function closePlannerModal() {
-      document.getElementById('plannerModal').classList.add('hidden');
-    }
-
-    function updatePlanSelection(sectionId, songId) {
-      if (songId) massPlanSelection[sectionId] = songId;
-      else delete massPlanSelection[sectionId];
-    }
-
-    function resetPlanSelection() {
-      if (confirm('¿Deseas reiniciar la selección del plan de misa?')) {
-        massPlanSelection = {};
-        savePlanToStorage();
-        logActivity(`Reinició/Limpió el plan de misa.`);
-        openPlannerModal();
-        renderLiturgicalNav();
+        document.getElementById('seasonSelect').value = currentSeason;
       }
     }
 
-    function savePlannerPlan() {
-      savePlanToStorage();
-      logActivity(`Guardó y actualizó el plan de misa.`);
-      closePlannerModal();
-      renderLiturgicalNav();
+    function changeLiturgicalSeason(season) {
+      currentSeason = season;
+      const badge = document.getElementById('liturgicBadge');
+      const titleHeader = document.getElementById('mainTitleHeader');
+      const sidebarTitle = document.getElementById('sidebarHeaderTitle');
+      const massCurrentSection = document.getElementById('massCurrentSection');
+      const massModeBadge = document.getElementById('massModeBadge');
+      const massNextBtn = document.getElementById('massNextBtn');
+      const massModeMainBtn = document.getElementById('massModeMainBtn');
+      const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
       
-      const firstSection = LITURGICAL_SECTIONS.find(sec => massPlanSelection[sec.id]);
-      if (firstSection && massPlanSelection[firstSection.id]) {
-        selectSong(massPlanSelection[firstSection.id]);
+      if (!badge || !titleHeader) return;
+
+      badge.className = "w-8 h-8 sm:w-10 sm:h-10 rounded-xl border flex items-center justify-center shadow-lg transition-colors duration-300 flex-shrink-0 ";
+      let textColorClass = "", borderBadgeClass = "", bgBadgeClass = "", solidBgClass = "", solidHoverClass = "", shadowColorClass = "";
+
+      if (season === 'purple') {
+        bgBadgeClass = 'bg-purple-900/60'; borderBadgeClass = 'border-purple-500'; textColorClass = 'text-purple-400';
+        solidBgClass = 'bg-purple-700'; solidHoverClass = 'hover:bg-purple-600'; shadowColorClass = 'shadow-purple-700/20';
+      } else if (season === 'red') {
+        bgBadgeClass = 'bg-red-900/60'; borderBadgeClass = 'border-red-500'; textColorClass = 'text-red-400';
+        solidBgClass = 'bg-red-700'; solidHoverClass = 'hover:bg-red-600'; shadowColorClass = 'shadow-red-700/20';
+      } else if (season === 'white') {
+        bgBadgeClass = 'bg-sky-900/60'; borderBadgeClass = 'border-sky-400'; textColorClass = 'text-sky-300';
+        solidBgClass = 'bg-sky-600'; solidHoverClass = 'hover:bg-sky-500'; shadowColorClass = 'shadow-sky-600/20';
       } else {
-        currentSongId = null;
-        document.getElementById('songContent').classList.add('hidden');
-        document.getElementById('emptyState').classList.remove('hidden');
+        bgBadgeClass = 'bg-emerald-900/60'; borderBadgeClass = 'border-emerald-500'; textColorClass = 'text-emerald-400';
+        solidBgClass = 'bg-emerald-600'; solidHoverClass = 'hover:bg-emerald-500'; shadowColorClass = 'shadow-emerald-600/20';
       }
+
+      badge.classList.add(bgBadgeClass, borderBadgeClass, textColorClass);
+      titleHeader.className = `font-serif-title text-xs sm:text-lg font-bold tracking-wide ${textColorClass} truncate transition-colors duration-300`;
+      if (sidebarTitle) sidebarTitle.className = `text-xs font-bold ${textColorClass} uppercase tracking-wider flex items-center gap-1.5 transition-colors duration-300`;
+      if (massCurrentSection) massCurrentSection.className = `text-xs ${textColorClass} font-bold uppercase tracking-wider block truncate transition-colors duration-300`;
+      if (sidebarToggleBtn) sidebarToggleBtn.className = `absolute -left-3 top-4 z-20 bg-slate-800 hover:bg-slate-700 ${textColorClass} border border-slate-700 p-1.5 rounded-full shadow-lg transition hidden md:flex items-center justify-center duration-300`;
+
+      document.querySelectorAll('.theme-icon-color').forEach(el => {
+        el.className = `w-4 h-4 theme-icon-color ${textColorClass} transition-colors duration-300`;
+      });
+
+      if (massModeBadge) massModeBadge.className = `${solidBgClass} text-slate-950 font-bold text-[10px] sm:text-xs px-2 sm:px-2.5 py-1 rounded-md uppercase tracking-wider flex-shrink-0 transition-colors duration-300`;
+      if (massNextBtn) massNextBtn.className = `flex-1 py-2.5 sm:py-3 ${solidBgClass} ${solidHoverClass} text-slate-950 font-bold rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 shadow-lg ${shadowColorClass} transition-colors duration-300`;
+      if (massModeMainBtn) massModeMainBtn.className = `${solidBgClass} ${solidHoverClass} text-slate-950 font-semibold p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs flex items-center space-x-1 shadow-md ${shadowColorClass} transition duration-300`;
     }
 
+    // Modo Misa en Vivo
     function openMassMode() {
       isMassSidebarVisible = false;
       document.getElementById('massSidebar').classList.add('hidden');
@@ -1320,13 +1176,11 @@
       selectMassStep(0);
       lucide.createIcons();
     }
-
-    function closeMassMode() {
-      document.getElementById('massModeModal').classList.add('hidden');
-    }
+    function closeMassMode() { document.getElementById('massModeModal').classList.add('hidden'); }
 
     function renderMassSteps() {
       const container = document.getElementById('massStepsList');
+      if (!container) return;
       container.innerHTML = '';
       LITURGICAL_SECTIONS.forEach((sec, index) => {
         const plannedSongId = massPlanSelection[sec.id];
@@ -1334,7 +1188,7 @@
 
         const btn = document.createElement('button');
         btn.onclick = () => selectMassStep(index);
-        btn.className = `w-full md:w-full min-w-[140px] md:min-w-0 text-left p-2.5 rounded-xl border text-xs transition mb-0 md:mb-1.5 flex items-center justify-between flex-shrink-0 ${
+        btn.className = `w-full min-w-[140px] md:min-w-0 text-left p-2.5 rounded-xl border text-xs transition mb-0 md:mb-1.5 flex items-center justify-between flex-shrink-0 ${
           index === currentMassStepIndex ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 font-semibold' : 'bg-slate-950 border-slate-800/80 text-slate-400 hover:bg-slate-800'
         }`;
         btn.innerHTML = `
@@ -1370,17 +1224,49 @@
       lucide.createIcons();
     }
 
-    function prevMassStep() {
-      if (currentMassStepIndex > 0) selectMassStep(currentMassStepIndex - 1);
+    function prevMassStep() { if (currentMassStepIndex > 0) selectMassStep(currentMassStepIndex - 1); }
+    function nextMassStep() { if (currentMassStepIndex < LITURGICAL_SECTIONS.length - 1) selectMassStep(currentMassStepIndex + 1); }
+
+    function openActivityLogModal() {
+      document.getElementById('activityLogModal').classList.remove('hidden');
+      renderActivityLogTable();
+      lucide.createIcons();
+    }
+    function closeActivityLogModal() { document.getElementById('activityLogModal').classList.add('hidden'); }
+
+    function renderActivityLogTable() {
+      const tbody = document.getElementById('activityLogTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (activityLog.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500">No hay registros de actividad recientes.</td></tr>`;
+        return;
+      }
+      activityLog.forEach(log => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition';
+        tr.innerHTML = `
+          <td class="p-3 text-slate-400 text-[11px]">${log.time}</td>
+          <td class="p-3 font-bold text-amber-400">${log.user}</td>
+          <td class="p-3 text-slate-200">${log.action}</td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
-    function nextMassStep() {
-      if (currentMassStepIndex < LITURGICAL_SECTIONS.length - 1) selectMassStep(currentMassStepIndex + 1);
+    async function clearActivityLog() {
+      if (confirm('¿Deseas limpiar todo el registro de actividad de la nube?')) {
+        const { getDocs, collection, deleteDoc, doc } = window.firebaseMethods;
+        const snapshot = await getDocs(collection(window.db, "activityLog"));
+        for (const d of snapshot.docs) {
+          await deleteDoc(doc(window.db, "activityLog", d.id));
+        }
+      }
     }
 
     document.addEventListener('keydown', (e) => {
       const massModal = document.getElementById('massModeModal');
-      if (!massModal.classList.contains('hidden')) {
+      if (massModal && !massModal.classList.contains('hidden')) {
         if (e.key === 'ArrowRight' || e.key === 'PageDown') nextMassStep();
         else if (e.key === 'ArrowLeft' || e.key === 'PageUp') prevMassStep();
         else if (e.key === 'Escape') closeMassMode();
