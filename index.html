@@ -88,7 +88,7 @@
       <!-- Controls & Actions -->
       <div class="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
         <div id="seasonSelectorContainer" class="relative hidden">
-          <select id="seasonSelect" onchange="promptChangeSeason(this.value)" class="bg-slate-800 border border-slate-700 text-slate-200 text-[11px] sm:text-xs rounded-lg px-2 py-1.5 pr-6 focus:ring-1 focus:ring-emerald-500 focus:outline-none cursor-pointer">
+          <select id="seasonSelect" onchange="promptChangeSeason(this.value)" class="bg-slate-800 border border-slate-700 text-slate-200 text-[11px] sm:text-xs rounded-lg px-2 py-1.5 pr-6 focus:ring-1 focus:ring-emerald-500 focus:outline-none cursor-pointer transition-colors duration-300">
             <option value="gold">Ordinario (Verde)</option>
             <option value="purple">Cuaresma/Adviento (Morado)</option>
             <option value="red">Fiestas/Pentecostés (Rojo)</option>
@@ -733,8 +733,8 @@
       if (!btn) return;
 
       if (currentActiveUser) {
-        btn.className = "p-1.5 sm:p-2 rounded-lg bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 transition flex items-center gap-1.5";
-        btn.innerHTML = `<i data-lucide="unlock" class="w-4 h-4"></i> <span class="text-xs font-bold hidden sm:inline">${currentActiveUser.username}</span>`;
+        btn.className = "p-1.5 sm:p-2 rounded-lg bg-slate-800 transition flex items-center gap-1.5";
+        btn.innerHTML = `<i data-lucide="unlock" class="w-4 h-4 theme-icon-color"></i> <span class="text-xs font-bold hidden sm:inline theme-icon-color">${currentActiveUser.username}</span>`;
         if (seasonContainer) seasonContainer.classList.remove('hidden');
         if (activityLogBtn && currentActiveUser.username.trim().toLowerCase() === 'enrique') {
           activityLogBtn.classList.remove('hidden');
@@ -747,7 +747,8 @@
         if (seasonContainer) seasonContainer.classList.add('hidden');
         if (activityLogBtn) activityLogBtn.classList.add('hidden');
       }
-      lucide.createIcons();
+      // Aplicar color activo actual al botón de sesión recién renderizado
+      changeLiturgicalSeason(currentSeason, false);
     }
 
     function openUsersAdminModal() {
@@ -1189,24 +1190,30 @@
       const massNextBtn = document.getElementById('massNextBtn');
       const massModeMainBtn = document.getElementById('massModeMainBtn');
       const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+      const seasonSelect = document.getElementById('seasonSelect');
+      const adminSessionBtn = document.getElementById('adminSessionBtn');
       
       if (!badge || !titleHeader) return;
 
       badge.className = "w-8 h-8 sm:w-10 sm:h-10 rounded-xl border flex items-center justify-center shadow-lg transition-colors duration-300 flex-shrink-0 ";
-      let textColorClass = "", borderBadgeClass = "", bgBadgeClass = "", solidBgClass = "", solidHoverClass = "", shadowColorClass = "";
+      let textColorClass = "", borderBadgeClass = "", bgBadgeClass = "", solidBgClass = "", solidHoverClass = "", shadowColorClass = "", borderSelectClass = "";
 
       if (season === 'purple') {
         bgBadgeClass = 'bg-purple-900/60'; borderBadgeClass = 'border-purple-500'; textColorClass = 'text-purple-400';
         solidBgClass = 'bg-purple-700'; solidHoverClass = 'hover:bg-purple-600'; shadowColorClass = 'shadow-purple-700/20';
+        borderSelectClass = 'border-purple-500/60 focus:ring-purple-500';
       } else if (season === 'red') {
         bgBadgeClass = 'bg-red-900/60'; borderBadgeClass = 'border-red-500'; textColorClass = 'text-red-400';
         solidBgClass = 'bg-red-700'; solidHoverClass = 'hover:bg-red-600'; shadowColorClass = 'shadow-red-700/20';
+        borderSelectClass = 'border-red-500/60 focus:ring-red-500';
       } else if (season === 'white') {
         bgBadgeClass = 'bg-sky-900/60'; borderBadgeClass = 'border-sky-400'; textColorClass = 'text-sky-300';
         solidBgClass = 'bg-sky-600'; solidHoverClass = 'hover:bg-sky-500'; shadowColorClass = 'shadow-sky-600/20';
+        borderSelectClass = 'border-sky-400/60 focus:ring-sky-500';
       } else {
         bgBadgeClass = 'bg-emerald-900/60'; borderBadgeClass = 'border-emerald-500'; textColorClass = 'text-emerald-400';
         solidBgClass = 'bg-emerald-600'; solidHoverClass = 'hover:bg-emerald-500'; shadowColorClass = 'shadow-emerald-600/20';
+        borderSelectClass = 'border-emerald-500/60 focus:ring-emerald-500';
       }
 
       badge.classList.add(bgBadgeClass, borderBadgeClass, textColorClass);
@@ -1215,7 +1222,17 @@
       if (massCurrentSection) massCurrentSection.className = `text-xs ${textColorClass} font-bold uppercase tracking-wider block truncate transition-colors duration-300`;
       if (sidebarToggleBtn) sidebarToggleBtn.className = `absolute -left-3 top-4 z-20 bg-slate-800 hover:bg-slate-700 ${textColorClass} border border-slate-700 p-1.5 rounded-full shadow-lg transition hidden md:flex items-center justify-center duration-300`;
 
-      // Actualizar todos los elementos y botones marcados con la clase dinámica
+      // Sincronizar el borde y estilo del selector de temporada superior
+      if (seasonSelect) {
+        seasonSelect.className = `bg-slate-800 border ${borderSelectClass} text-slate-200 text-[11px] sm:text-xs rounded-lg px-2 py-1.5 pr-6 focus:ring-1 focus:outline-none cursor-pointer transition-colors duration-300`;
+      }
+
+      // Sincronizar el botón de administrador si está activo
+      if (adminSessionBtn && currentActiveUser) {
+        adminSessionBtn.className = `p-1.5 sm:p-2 rounded-lg bg-slate-800 border ${borderSelectClass} transition flex items-center gap-1.5`;
+      }
+
+      // Actualizar todos los iconos y elementos con la clase theme-icon-color
       document.querySelectorAll('.theme-icon-color').forEach(el => {
         el.className = `w-4 h-4 theme-icon-color ${textColorClass} transition-colors duration-300`;
       });
