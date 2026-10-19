@@ -80,7 +80,7 @@
           <i data-lucide="cross" class="w-4 h-4 sm:w-5 sm:h-5"></i>
         </div>
         <div class="min-w-0">
-          <h1 id="mainTitleHeader" class="font-serif-title text-[11px] sm:text-sm font-bold tracking-wide theme-text text-emerald-400 truncate transition-colors duration-300">Cantoral Litúrgico</h1>
+          <h1 id="mainTitleHeader" class="font-serif-title text-[11px] sm:text-sm font-bold tracking-wide text-emerald-400 truncate transition-colors duration-300">Cantoral Litúrgico</h1>
           <p class="text-[10px] sm:text-xs text-slate-300 font-medium truncate">Capilla de la colonia Oaxaca “Virgen de Guadalupe”</p>
         </div>
       </div>
@@ -88,7 +88,7 @@
       <!-- Controls & Actions -->
       <div class="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
         <div id="seasonSelectorContainer" class="relative hidden">
-          <select id="seasonSelect" onchange="promptChangeSeason(this.value)" class="bg-slate-800 border border-slate-700 theme-text text-slate-200 text-[11px] sm:text-xs rounded-lg px-2 py-1.5 pr-6 focus:ring-1 focus:outline-none cursor-pointer transition-colors duration-300">
+          <select id="seasonSelect" onchange="promptChangeSeason(this.value)" class="bg-slate-800 border border-slate-700 text-slate-200 text-[11px] sm:text-xs rounded-lg px-2 py-1.5 pr-6 focus:ring-1 focus:outline-none cursor-pointer transition-colors duration-300">
             <option value="gold">Ordinario (Verde)</option>
             <option value="purple">Cuaresma/Adviento (Morado)</option>
             <option value="red">Fiestas/Pentecostés (Rojo)</option>
@@ -102,17 +102,17 @@
         </button>
 
         <button onclick="handlePermissionAction('plan_mass', () => openPlannerModal())" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs flex items-center space-x-1 transition" title="Planear Misa">
-          <i data-lucide="calendar" class="w-4 h-4 theme-text text-emerald-400 transition-colors duration-300"></i>
+          <i data-lucide="calendar" class="w-4 h-4 themed-icon text-emerald-400 transition-colors duration-300"></i>
           <span class="hidden md:inline">Planear</span>
         </button>
 
         <button onclick="handlePermissionAction('manage_songs', () => openAdminPanel())" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs flex items-center space-x-1 transition" title="Gestión Cantos">
-          <i data-lucide="music" class="w-4 h-4 theme-text text-emerald-400 transition-colors duration-300"></i>
+          <i data-lucide="music" class="w-4 h-4 themed-icon text-emerald-400 transition-colors duration-300"></i>
           <span class="hidden md:inline">Cantos</span>
         </button>
 
         <button onclick="handlePermissionAction('manage_users', () => openUsersAdminModal())" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs flex items-center space-x-1 transition" title="Administradores">
-          <i data-lucide="users" class="w-4 h-4 theme-text text-emerald-400 transition-colors duration-300"></i>
+          <i data-lucide="users" class="w-4 h-4 themed-icon text-emerald-400 transition-colors duration-300"></i>
           <span class="hidden md:inline">Admins</span>
         </button>
 
@@ -130,15 +130,15 @@
 
   <!-- MAIN CONTENT CONTAINER -->
   <div class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 flex flex-col md:flex-row gap-4 sm:gap-6 relative">
-    <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="absolute -left-3 top-4 z-20 bg-slate-800 hover:bg-slate-700 theme-text text-emerald-400 border border-slate-700 p-1.5 rounded-full shadow-lg transition hidden md:flex items-center justify-center duration-300" title="Ocultar/Mostrar Orden Litúrgico">
+    <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="absolute -left-3 top-4 z-20 bg-slate-800 hover:bg-slate-700 themed-icon text-emerald-400 border border-slate-700 p-1.5 rounded-full shadow-lg transition hidden md:flex items-center justify-center duration-300" title="Ocultar/Mostrar Orden Litúrgico">
       <i data-lucide="panel-left-close" id="sidebarToggleIcon" class="w-4 h-4"></i>
     </button>
 
     <!-- SIDEBAR -->
     <aside id="liturgySidebar" class="w-full md:w-80 flex-shrink-0 flex flex-col gap-4 transition-all duration-300">
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-md flex items-center justify-between">
-        <h2 id="sidebarHeaderTitle" class="text-xs font-bold theme-text text-emerald-400 uppercase tracking-wider flex items-center gap-1.5 transition-colors duration-300">
-          <i data-lucide="list-music" class="w-4 h-4 theme-text"></i> Plan de Misa
+        <h2 id="sidebarHeaderTitle" class="text-xs font-bold themed-icon text-emerald-400 uppercase tracking-wider flex items-center gap-1.5 transition-colors duration-300">
+          <i data-lucide="list-music" class="w-4 h-4 themed-icon"></i> Plan de Misa
         </h2>
       </div>
 
@@ -444,7 +444,7 @@
   <div id="massModeModal" class="fixed inset-0 bg-slate-950 z-50 flex flex-col hidden overflow-hidden">
     <header class="bg-slate-900 border-b border-slate-800 px-3 sm:px-4 py-3 flex items-center justify-between gap-2">
       <div class="flex items-center space-x-2 sm:space-x-3 min-w-0">
-        <button onclick="toggleMassSidebar()" id="massSidebarToggleBtn" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded-lg border border-slate-700 transition flex items-center justify-center theme-text duration-300">
+        <button onclick="toggleMassSidebar()" id="massSidebarToggleBtn" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded-lg border border-slate-700 transition flex items-center justify-center themed-icon duration-300">
           <i data-lucide="list" class="w-4 h-4"></i>
         </button>
         <span id="massModeBadge" class="bg-emerald-600 text-slate-950 font-bold text-[10px] sm:text-xs px-2 sm:px-2.5 py-1 rounded-md uppercase tracking-wider flex-shrink-0">Misa En Vivo</span>
@@ -733,7 +733,7 @@
       if (!btn) return;
 
       if (currentActiveUser) {
-        btn.innerHTML = `<i data-lucide="unlock" class="w-4 h-4 theme-text"></i> <span class="text-xs font-bold hidden sm:inline theme-text truncate">${currentActiveUser.username}</span>`;
+        btn.innerHTML = `<i data-lucide="unlock" class="w-4 h-4 themed-icon"></i> <span class="text-xs font-bold hidden sm:inline themed-icon truncate">${currentActiveUser.username}</span>`;
         if (seasonContainer) seasonContainer.classList.remove('hidden');
         if (activityLogBtn && currentActiveUser.username.trim().toLowerCase() === 'enrique') {
           activityLogBtn.classList.remove('hidden');
@@ -864,7 +864,7 @@
         tr.className = 'hover:bg-slate-800/50 transition';
         tr.innerHTML = `
           <td class="p-3 font-semibold text-slate-100">${song.title}</td>
-          <td class="p-3 text-emerald-400">${getSectionName(song.section)}</td>
+          <td class="p-3 themed-icon text-emerald-400">${getSectionName(song.section)}</td>
           <td class="p-3 text-slate-400">${song.author || 'Tradicional'}</td>
           <td class="p-3 text-right space-x-2">
             <button onclick="editSongFromAdmin('${song.id}')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs">Editar</button>
@@ -874,6 +874,7 @@
         tbody.appendChild(tr);
       });
       document.getElementById('adminTotalCount').textContent = `Mostrando ${filteredSongs.length} de ${songs.length} cantos`;
+      changeLiturgicalSeason(currentSeason, false);
     }
 
     function editSongFromAdmin(id) {
@@ -983,7 +984,7 @@
 
         row.innerHTML = `
           <div class="sm:w-1/2">
-            <span class="text-xs font-bold text-emerald-400 block">${sec.name}</span>
+            <span class="text-xs font-bold themed-icon text-emerald-400 block">${sec.name}</span>
             <span class="text-[11px] text-slate-500">${sec.category}</span>
           </div>
           <select onchange="updatePlanSelection('${sec.id}', this.value)" class="sm:w-1/2 bg-slate-900 border border-slate-800 text-slate-200 text-xs rounded-lg p-2 focus:outline-none focus:border-emerald-500">
@@ -993,6 +994,7 @@
         container.appendChild(row);
       });
       lucide.createIcons();
+      changeLiturgicalSeason(currentSeason, false);
     }
     function closePlannerModal() { document.getElementById('plannerModal').classList.add('hidden'); }
 
@@ -1181,12 +1183,9 @@
       currentSeason = season;
       const badge = document.getElementById('liturgicBadge');
       const titleHeader = document.getElementById('mainTitleHeader');
-      const sidebarTitle = document.getElementById('sidebarHeaderTitle');
-      const massCurrentSection = document.getElementById('massCurrentSection');
       const massModeBadge = document.getElementById('massModeBadge');
       const massNextBtn = document.getElementById('massNextBtn');
       const massModeMainBtn = document.getElementById('massModeMainBtn');
-      const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
       const seasonSelect = document.getElementById('seasonSelect');
       const adminSessionBtn = document.getElementById('adminSessionBtn');
       
@@ -1214,22 +1213,18 @@
       }
 
       badge.classList.add(bgBadgeClass, borderBadgeClass, textColorClass);
-      
-      if (sidebarTitle) sidebarTitle.className = `text-xs font-bold theme-text uppercase tracking-wider flex items-center gap-1.5 transition-colors duration-300`;
-      if (massCurrentSection) massCurrentSection.className = `text-xs theme-text font-bold uppercase tracking-wider block truncate transition-colors duration-300`;
-      if (sidebarToggleBtn) sidebarToggleBtn.className = `absolute -left-3 top-4 z-20 bg-slate-800 hover:bg-slate-700 theme-text border border-slate-700 p-1.5 rounded-full shadow-lg transition hidden md:flex items-center justify-center duration-300`;
+      titleHeader.className = `font-serif-title text-[11px] sm:text-sm font-bold tracking-wide ${textColorClass} truncate transition-colors duration-300`;
 
-      // Sincronizar selectores y bordes con la clase genérica theme-text
       if (seasonSelect) {
-        seasonSelect.className = `bg-slate-800 border ${borderSelectClass} theme-text text-slate-200 text-[11px] sm:text-xs rounded-lg px-2 py-1.5 pr-6 focus:ring-1 focus:outline-none cursor-pointer transition-colors duration-300`;
+        seasonSelect.className = `bg-slate-800 border ${borderSelectClass} ${textColorClass} text-slate-200 text-[11px] sm:text-xs rounded-lg px-2 py-1.5 pr-6 focus:ring-1 focus:outline-none cursor-pointer transition-colors duration-300`;
       }
 
       if (adminSessionBtn && currentActiveUser) {
         adminSessionBtn.className = `p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-slate-800 border ${borderSelectClass} transition flex items-center gap-1.5`;
       }
 
-      // Actualizar de forma masiva todos los elementos que usan clase theme-text
-      document.querySelectorAll('.theme-text').forEach(el => {
+      // Aplicar color dinámico a todos los elementos con la clase themed-icon
+      document.querySelectorAll('.themed-icon').forEach(el => {
         el.className = el.className.replace(/text-(emerald|purple|red|sky)-(300|400|500)/g, '');
         el.classList.add(textColorClass);
       });
