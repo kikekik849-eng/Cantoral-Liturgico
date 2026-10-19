@@ -75,13 +75,13 @@
   <!-- TOP HEADER / NAV -->
   <header class="bg-slate-900/90 border-b border-slate-800 sticky top-0 z-30 backdrop-blur-md">
     <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-1">
-      <div class="flex items-center space-x-2 min-w-0">
+      <div class="flex items-center space-x-2.5 min-w-0">
         <div id="liturgicBadge" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-500/10 flex-shrink-0 transition-colors duration-300">
           <i data-lucide="cross" class="w-4 h-4 sm:w-5 sm:h-5"></i>
         </div>
         <div class="min-w-0">
-          <h1 id="mainTitleHeader" class="font-serif-title text-xs sm:text-lg font-bold tracking-wide text-emerald-400 truncate transition-colors duration-300">Cantoral Litúrgico</h1>
-          <p class="text-[9px] sm:text-xs text-slate-400 font-medium truncate">Capilla Col. Oaxaca</p>
+          <h1 id="mainTitleHeader" class="font-serif-title text-[11px] sm:text-sm font-bold tracking-wide text-emerald-400 truncate transition-colors duration-300">Cantoral Litúrgico</h1>
+          <p class="text-[10px] sm:text-xs text-slate-300 font-medium truncate">Capilla de la colonia Oaxaca “Virgen de Guadalupe”</p>
         </div>
       </div>
 
@@ -544,7 +544,6 @@
           massPlanSelection[docSnap.id] = docSnap.data().songId;
         });
         renderLiturgicalNav();
-        // Si el canto actual ya no está en el plan o no hay seleccionado, limpiar vista
         const activeSongAssigned = Object.values(massPlanSelection).includes(currentSongId);
         if (!activeSongAssigned && currentSongId) {
           selectSong(null);
@@ -1040,11 +1039,35 @@
         else banner.classList.add('hidden');
       }
 
+      // Determinar clase de color activo según el tiempo litúrgico actual
+      let activeTextThemeClass = 'text-emerald-400';
+      let activeBgThemeClass = 'bg-emerald-500 text-slate-950 font-bold border border-emerald-400';
+      let assignedBgThemeClass = 'bg-emerald-500/20 text-emerald-300 font-medium border border-emerald-500/40 hover:bg-emerald-500/30';
+      let starIconColorClass = 'text-emerald-400';
+
+      if (currentSeason === 'purple') {
+        activeTextThemeClass = 'text-purple-400';
+        activeBgThemeClass = 'bg-purple-600 text-slate-950 font-bold border border-purple-400';
+        assignedBgThemeClass = 'bg-purple-500/20 text-purple-300 font-medium border border-purple-500/40 hover:bg-purple-500/30';
+        starIconColorClass = 'text-purple-400';
+      } else if (currentSeason === 'red') {
+        activeTextThemeClass = 'text-red-400';
+        activeBgThemeClass = 'bg-red-600 text-slate-950 font-bold border border-red-400';
+        assignedBgThemeClass = 'bg-red-500/20 text-red-300 font-medium border border-red-500/40 hover:bg-red-500/30';
+        starIconColorClass = 'text-red-400';
+      } else if (currentSeason === 'white') {
+        activeTextThemeClass = 'text-sky-300';
+        activeBgThemeClass = 'bg-sky-500 text-slate-950 font-bold border border-sky-300';
+        assignedBgThemeClass = 'bg-sky-500/20 text-sky-200 font-medium border border-sky-500/40 hover:bg-sky-500/30';
+        starIconColorClass = 'text-sky-300';
+      }
+
       LITURGICAL_SECTIONS.forEach(sec => {
         if (sec.category !== currentCategory) {
           currentCategory = sec.category;
           const catHeader = document.createElement('div');
-          catHeader.className = 'text-[11px] font-bold text-slate-500 uppercase tracking-wider mt-3 mb-1 px-2';
+          // Las categorías del plan de misa ahora heredan el color litúrgico dinámico
+          catHeader.className = `text-[11px] font-bold ${activeTextThemeClass} uppercase tracking-wider mt-3 mb-1 px-2 transition-colors duration-300`;
           catHeader.textContent = currentCategory;
           navContainer.appendChild(catHeader);
         }
@@ -1066,9 +1089,9 @@
           const planItem = document.createElement('button');
           planItem.onclick = () => selectSong(plannedSong.id);
           planItem.className = `w-full text-left px-2.5 py-1.5 rounded-lg text-xs truncate transition flex items-center justify-between ${
-            plannedSong.id === currentSongId ? 'bg-emerald-500 text-slate-950 font-bold border border-emerald-400' : 'bg-emerald-500/20 text-emerald-300 font-medium border border-emerald-500/40 hover:bg-emerald-500/30'
+            plannedSong.id === currentSongId ? activeBgThemeClass : assignedBgThemeClass
           }`;
-          planItem.innerHTML = `<span class="truncate flex items-center gap-1.5"><i data-lucide="star" class="w-3 h-3 text-emerald-400 fill-current flex-shrink-0"></i> ${plannedSong.title}</span>`;
+          planItem.innerHTML = `<span class="truncate flex items-center gap-1.5"><i data-lucide="star" class="w-3 h-3 ${starIconColorClass} fill-current flex-shrink-0"></i> ${plannedSong.title}</span>`;
           slotContainer.appendChild(planItem);
         } else {
           const emptyItem = document.createElement('div');
@@ -1189,7 +1212,7 @@
       }
 
       badge.classList.add(bgBadgeClass, borderBadgeClass, textColorClass);
-      titleHeader.className = `font-serif-title text-xs sm:text-lg font-bold tracking-wide ${textColorClass} truncate transition-colors duration-300`;
+      titleHeader.className = `font-serif-title text-[11px] sm:text-sm font-bold tracking-wide ${textColorClass} truncate transition-colors duration-300`;
       if (sidebarTitle) sidebarTitle.className = `text-xs font-bold ${textColorClass} uppercase tracking-wider flex items-center gap-1.5 transition-colors duration-300`;
       if (massCurrentSection) massCurrentSection.className = `text-xs ${textColorClass} font-bold uppercase tracking-wider block truncate transition-colors duration-300`;
       if (sidebarToggleBtn) sidebarToggleBtn.className = `absolute -left-3 top-4 z-20 bg-slate-800 hover:bg-slate-700 ${textColorClass} border border-slate-700 p-1.5 rounded-full shadow-lg transition hidden md:flex items-center justify-center duration-300`;
@@ -1201,6 +1224,9 @@
       if (massModeBadge) massModeBadge.className = `${solidBgClass} text-slate-950 font-bold text-[10px] sm:text-xs px-2 sm:px-2.5 py-1 rounded-md uppercase tracking-wider flex-shrink-0 transition-colors duration-300`;
       if (massNextBtn) massNextBtn.className = `flex-1 py-2.5 sm:py-3 ${solidBgClass} ${solidHoverClass} text-slate-950 font-bold rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 shadow-lg ${shadowColorClass} transition-colors duration-300`;
       if (massModeMainBtn) massModeMainBtn.className = `${solidBgClass} ${solidHoverClass} text-slate-950 font-semibold p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs flex items-center space-x-1 shadow-md ${shadowColorClass} transition duration-300`;
+
+      // Actualizar también la navegación lateral al cambiar el tiempo
+      renderLiturgicalNav();
     }
 
     // Modo Misa en Vivo
