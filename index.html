@@ -745,6 +745,7 @@
         if (seasonContainer) seasonContainer.classList.add('hidden');
         if (activityLogBtn) activityLogBtn.classList.add('hidden');
       }
+      lucide.createIcons();
       changeLiturgicalSeason(currentSeason, false);
     }
 
@@ -1223,9 +1224,9 @@
         adminSessionBtn.className = `p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-slate-800 border ${borderSelectClass} transition flex items-center gap-1.5`;
       }
 
-      // Aplicar color dinámico a todos los elementos con la clase themed-icon
+      // Actualizar de forma segura usando classList en lugar de .replace()
       document.querySelectorAll('.themed-icon').forEach(el => {
-        el.className = el.className.replace(/text-(emerald|purple|red|sky)-(300|400|500)/g, '');
+        el.classList.remove('text-emerald-400', 'text-purple-400', 'text-red-400', 'text-sky-300', 'text-emerald-300', 'text-purple-300', 'text-red-300', 'text-sky-200');
         el.classList.add(textColorClass);
       });
 
