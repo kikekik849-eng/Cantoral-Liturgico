@@ -796,9 +796,9 @@
       const username = document.getElementById('userNameInput').value.trim();
       const password = document.getElementById('userPasswordInput').value.trim();
       const permissions = {
-        plan_mass: document.getElementById('permPlanMass'].checked,
-        manage_songs: document.getElementById('permManageSongs'].checked,
-        manage_users: document.getElementById('permManageUsers'].checked
+        plan_mass: document.getElementById('permPlanMass').checked,
+        manage_songs: document.getElementById('permManageSongs').checked,
+        manage_users: document.getElementById('permManageUsers').checked
       };
       if (!username || !password) return;
       await saveUserToFirebase({ id, username, password, permissions });
