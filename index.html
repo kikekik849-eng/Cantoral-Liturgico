@@ -524,7 +524,7 @@
       const { collection, onSnapshot, doc } = window.firebaseMethods;
       const db = window.db;
 
-      // Sincronizar Cantos en tiempo real (Sin autorecuperación para permitir borrar todo)
+      // Sincronizar Cantos en tiempo real
       onSnapshot(collection(db, "songs"), (snapshot) => {
         songs = [];
         snapshot.forEach(docSnap => {
@@ -532,7 +532,9 @@
         });
         renderLiturgicalNav();
         renderAdminSongsList();
-        if (currentSongId) selectSong(currentSongId);
+        if (currentSongId) {
+          selectSong(currentSongId);
+        }
       });
 
       // Sincronizar Plan de Misa en tiempo real
@@ -542,6 +544,11 @@
           massPlanSelection[docSnap.id] = docSnap.data().songId;
         });
         renderLiturgicalNav();
+        // Si el canto actual ya no está en el plan o no hay seleccionado, limpiar vista
+        const activeSongAssigned = Object.values(massPlanSelection).includes(currentSongId);
+        if (!activeSongAssigned && currentSongId) {
+          selectSong(null);
+        }
       });
 
       // Sincronizar Usuarios Administradores
@@ -899,9 +906,7 @@
           renderLiturgicalNav();
           
           if (currentSongId && String(currentSongId) === String(id)) {
-            currentSongId = null;
-            document.getElementById('songContent').classList.add('hidden');
-            document.getElementById('emptyState').classList.remove('hidden');
+            selectSong(null);
           }
         } catch (error) {
           console.error("Error al eliminar el canto:", error);
@@ -1019,9 +1024,7 @@
       if (firstSection && massPlanSelection[firstSection.id]) {
         selectSong(massPlanSelection[firstSection.id]);
       } else {
-        currentSongId = null;
-        document.getElementById('songContent').classList.add('hidden');
-        document.getElementById('emptyState').classList.remove('hidden');
+        selectSong(null);
       }
     }
 
@@ -1086,11 +1089,21 @@
     }
 
     function selectSong(id) {
+      if (!id) {
+        currentSongId = null;
+        document.getElementById('songContent').classList.add('hidden');
+        document.getElementById('emptyState').classList.remove('hidden');
+        renderLiturgicalNav();
+        return;
+      }
+
       currentSongId = id;
       const song = songs.find(s => s.id === id);
       if (!song) {
+        currentSongId = null;
         document.getElementById('songContent').classList.add('hidden');
         document.getElementById('emptyState').classList.remove('hidden');
+        renderLiturgicalNav();
         return;
       }
 
