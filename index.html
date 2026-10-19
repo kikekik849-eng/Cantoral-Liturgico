@@ -488,10 +488,6 @@
     const DEFAULT_USERS = [
       { id: 'admin_root', username: 'Enrique', password: 'Alex150515', permissions: { plan_mass: true, manage_songs: true, manage_users: true } }
     ];
-    const DEFAULT_SONGS = [
-      { id: '1', title: 'Juntos como Hermanos', section: 'entrada', author: 'Cesáreo Gabaráin', lyrics: 'Juntos como hermanos,\nmiembros de una Iglesia,\nvamos caminando\nal encuentro del Señor.' },
-      { id: '2', title: 'Señor Ten Piedad', section: 'penitencial', author: 'Litúrgico', lyrics: 'Señor, ten piedad de nosotros. (2v)\nCristo, ten piedad de nosotros. (2v)' }
-    ];
 
     let adminUsers = [];
     let currentActiveUser = null;
@@ -525,18 +521,15 @@
     ];
 
     window.initFirebaseSync = function() {
-      const { collection, onSnapshot, doc, getDocs } = window.firebaseMethods;
+      const { collection, onSnapshot, doc } = window.firebaseMethods;
       const db = window.db;
 
-      // Sincronizar Cantos en tiempo real
+      // Sincronizar Cantos en tiempo real (Sin autorecuperación para permitir borrar todo)
       onSnapshot(collection(db, "songs"), (snapshot) => {
         songs = [];
         snapshot.forEach(docSnap => {
           songs.push({ id: docSnap.id, ...docSnap.data() });
         });
-        if (songs.length === 0) {
-          DEFAULT_SONGS.forEach(s => saveSongToFirebase(s));
-        }
         renderLiturgicalNav();
         renderAdminSongsList();
         if (currentSongId) selectSong(currentSongId);
