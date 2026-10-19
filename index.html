@@ -885,17 +885,35 @@
     }
 
     async function deleteSongById(id) {
-      const songToDelete = songs.find(s => s.id === id);
+      const songToDelete = songs.find(s => String(s.id) === String(id));
       const songTitle = songToDelete ? songToDelete.title : 'este canto';
+      
       if (confirm(`¿Estás seguro de eliminar "${songTitle}"?`)) {
-        await deleteSongFromFirebase(id);
-        Object.keys(massPlanSelection).forEach(secId => {
-          if (massPlanSelection[secId] === id) delete massPlanSelection[secId];
-        });
-        await savePlanToFirebase();
-        logActivity(`Eliminó el canto: "${songTitle}"`);
-        renderAdminSongsList();
-        renderLiturgicalNav();
+        try {
+          await deleteSongFromFirebase(String(id));
+          
+          Object.keys(massPlanSelection).forEach(secId => {
+            if (String(massPlanSelection[secId]) === String(id)) {
+              delete massPlanSelection[secId];
+            }
+          });
+          
+          await savePlanToFirebase();
+          logActivity(`Eliminó el canto: "${songTitle}"`);
+          
+          songs = songs.filter(s => String(s.id) !== String(id));
+          renderAdminSongsList();
+          renderLiturgicalNav();
+          
+          if (currentSongId && String(currentSongId) === String(id)) {
+            currentSongId = null;
+            document.getElementById('songContent').classList.add('hidden');
+            document.getElementById('emptyState').classList.remove('hidden');
+          }
+        } catch (error) {
+          console.error("Error al eliminar el canto:", error);
+          alert("Hubo un error al intentar eliminar el canto de la base de datos.");
+        }
       }
     }
 
